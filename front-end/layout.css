@@ -1,0 +1,18 @@
+*{
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+} /*更好用的盒子布局*/
+
+html,#main{
+    width: 100%;
+    height: 100%;
+} /*方便宽度不够的设备确定宽度*/
+
+body{
+    background-color: rgb(226, 240, 217);
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden; /*隐藏横向滚动条*/
+    overflow-y: hidden;
+}
