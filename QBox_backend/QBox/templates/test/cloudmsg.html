@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        {% if not submitted %}
+        <form action="/cloudmsg/" method="POST">
+            <p>发送方</p><input type="text" name="sender" required>
+            <br>
+            <p>接收方</p><input type="text" name="receiver" required>
+            <br>
+            <p>留言内容</p><input type="text" name="content">
+            <br>
+            <p></p><input type="submit" value="提交留言">
+        </form>
+        <p>获取留言</p>
+        <form action="/cloudmsg/" method="GET">
+            <p>接收方</p><input type="text" name="receiver" required>
+            <br>
+            <p></p><input type="submit" value="获取留言">
+        </form>
+        {% else %}
+        <p>给{{ receiver }}的留言</p>
+        <dl>
+        {% for msg in msgs %}
+        <dt>{{msg.content}}</dt>
+            <dd>来自：{{msg.sender}} &nbsp; {{msg.time}}</dd>
+        <hr>
+        {% endfor %}
+        </dl>       
+        <br>
+        <a href="cloudmsg.html">
+            <button>返回</button>
+        </a>
+        {% endif %}
+        {% if postsuccess %}
+        <script>
+            alert("提交成功~");
+        </script>
+        {% endif %}
+    </body>
+</html>

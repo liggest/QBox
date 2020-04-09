@@ -480,6 +480,8 @@ input.textarea{ /*输入框*/
     -moz-user-select: none;
     -webkit-user-select: none;
     -ms-user-select: none;
+
+    transform: rotate(45deg);
 }
 
 .resizer.leftUp{
@@ -497,6 +499,8 @@ input.textarea{ /*输入框*/
     height: 10px;
     top: 45%;
     left: 45%;
+    
+    transform: rotate(-45deg);
 }
 
 .resizer.rightUp{
@@ -514,6 +518,8 @@ input.textarea{ /*输入框*/
     height: 10px;
     top: 45%;
     left: 45%;
+
+    transform: rotate(-45deg);
 }
 
 .resizer.leftDown{
@@ -531,6 +537,8 @@ input.textarea{ /*输入框*/
     height: 10px;
     top: 45%;
     left: 45%;
+
+    transform: rotate(-45deg);
 }
 
 .resizer.rightDown{
@@ -548,5 +556,7 @@ input.textarea{ /*输入框*/
     height: 10px;
     top: 45%;
     left: 45%;
+
+    transform: rotate(-45deg);
 }
 

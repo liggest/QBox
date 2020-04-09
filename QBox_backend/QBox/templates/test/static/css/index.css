@@ -1,0 +1,562 @@
+
+body{
+    width: 100%;
+    height: 100%;
+}
+
+.box::-webkit-scrollbar{ /*对chrome有效的自定义滚动条样式*/
+    display: none;
+    width: 6px;
+}
+
+/*
+.box::-webkit-resizer{ 
+    display: none;
+    
+    margin-left: -5px;
+    margin-top: -5px;
+    cursor: se-resize;
+    
+}
+*/
+
+.box{ /*外层盒*/
+    position: absolute;    
+    /*resize: both;
+    overflow: hidden;*/
+
+    scroll-behavior: smooth;
+    scrollbar-width: 6px;
+
+    transition: transform 0.4s ease-in-out,opacity 1.0s ease-in;
+}
+
+@media only screen and (min-width:960px){ /*屏宽大于960*/
+    @keyframes opening{
+        0%{
+            width: 40px;
+            height: 40px;
+        }
+        45%{
+            transform:translate(0px,0px);
+            -moz-transform: translate(0px,0px);
+            -webkit-transform: translate(0px,0px);
+            -o-transform: translate(0px,0px);
+        }
+        79%{
+            width: 970px;
+            height: 40px;
+            transform:translate(10%,0px);
+            -moz-transform: translate(10%,0px);
+            -webkit-transform: translate(10%,0px);
+            -o-transform: translate(10%,0px);
+        }
+        85%{
+            width: 960px;
+            height: 40px;
+            transform:translate(-5%,0px);
+            -moz-transform: translate(-5%,0px);
+            -webkit-transform: translate(-5%,0px);
+            -o-transform: translate(-5%,0px);
+        }
+        91%{
+            height: 560px;
+        }
+        100%{
+            height: 540px;
+            transform:translate(0px,0px);
+            -moz-transform: translate(0px,0px);
+            -webkit-transform: translate(0px,0px);
+            -o-transform: translate(0px,0px);
+        }
+    
+    }
+    .box.animated{
+        animation: opening 1.75s ease;
+        -webkit-animation: opening 1.75s ease;
+        -moz-animation: opening 1.75s ease;
+        -o-animation: opening 1.75s ease;
+    }
+    .box{
+        left:50%;
+        width: 960px;
+        height: 540px;
+        margin: auto 0 auto -480px;
+    }
+}
+
+@media only screen and (max-width:960px){ /*屏宽小于960*/
+    @keyframes opening-narrow{
+        0%{
+            width: 40px;
+            height: 40px;
+        }
+        45%{
+            transform:translate(0px,0px);
+            -moz-transform: translate(0px,0px);
+            -webkit-transform: translate(0px,0px);
+            -o-transform: translate(0px,0px);
+        }
+        79%{
+            width: 100%;
+            height: 40px;
+            transform:translate(10%,0px);
+            -moz-transform: translate(10%,0px);
+            -webkit-transform: translate(10%,0px);
+            -o-transform: translate(10%,0px);
+        }
+        85%{
+            width: 96%;
+            height: 40px;
+            transform:translate(-5%,0px);
+            -moz-transform: translate(-5%,0px);
+            -webkit-transform: translate(-5%,0px);
+            -o-transform: translate(-5%,0px);
+        }
+        91%{
+            height: 100%;
+        }
+        100%{
+            height: 96%;
+            transform:translate(0px,0px);
+            -moz-transform: translate(0px,0px);
+            -webkit-transform: translate(0px,0px);
+            -o-transform: translate(0px,0px);
+        }
+    
+    }
+    .box.animated{
+        animation: opening-narrow 1.75s ease;
+        -webkit-animation: opening-narrow 1.75s ease;
+        -moz-animation: opening-narrow 1.75s ease;
+        -o-animation: opening-narrow 1.75s ease;
+    }
+    .box{
+        width: 96%;
+        height: 96%;
+        margin: auto auto auto 0px; 
+    }
+}
+
+.frontbox{
+    position: absolute;
+    z-index: 5;
+    background-color:white;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 0%;
+    opacity: 0.0;
+    scroll-behavior: smooth;
+    scrollbar-width: 6px;
+    transition: height 0.6s ease-in-out,opacity 0.6s ease-in;
+    -webkit-transition: height 0.6s ease-in-out,opacity 0.6s ease-in;
+}
+.frontbox.down{
+    height:100%;
+    opacity: 0.618;
+}
+
+.close{
+    position: absolute;
+    top: 1%;
+    right: 1%;
+    padding: 3px 3px 3px 3px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color:red;
+    text-align: center;
+    font-size: 24px;
+    color: white;
+    cursor: pointer;
+}
+
+.midbox{
+    position: absolute;
+    z-index: 1;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    background-color: #f2f2f2;
+    border-radius: 5px;
+    box-shadow:2px 2px 5px #888888;
+    transition: transform 0.6s ease-in-out,z-index 1s;
+    -webkit-transition: transform 0.6s ease-in-out,z-index 1s;
+}
+.midbox::after{
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    box-shadow:5px 5px 5px #888888;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    -webkit-transition: opacity 0.5s ease-in-out;
+}
+
+.midbox.moreshadow::after{
+    opacity: 1;
+}
+
+.midbox.upsidedown{
+    z-index: 0;
+    transform:rotateX(180deg);
+}
+
+.backbox{
+    position: absolute;
+    z-index: 0;
+    background-color: aqua;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    scroll-behavior: smooth;
+    scrollbar-width: 6px;
+    border-radius: 5px;
+    transform: rotateX(180deg);
+    transition: transform 0.6s ease-in-out,z-index 1s;
+    -webkit-transition: transform 0.6s ease-in-out,z-index 1s;
+}
+
+.backbox.upsidedown{
+    z-index: 1;
+    transform:rotateX(0deg);
+}
+
+.backbox.animated{
+    animation: opening-after 0.5s ease-in-out 1.75s backwards;
+    -webkit-animation: opening-after 0.5s ease-in-out 1.75s backwards;
+    -moz-animation: opening-after 0.5s ease-in-out 1.75s backwards;
+    -o-animation: opening-after 0.5s ease-in-out 1.75s backwards;
+}
+
+
+@keyframes opening-after{ /*内容盒和输入盒的渐变 在外层盒出现之后*/
+    0%{
+        opacity: 0;
+    }
+    100%{
+        opacity: 1;
+    }
+}
+
+.innerbox{
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    scroll-behavior: smooth;
+    scrollbar-width: 6px;
+    border-radius: 5px;
+    display: flex;
+    display: -webkit-flex;
+    flex-direction:column;
+    -webkit-align-items:stretch;
+    align-items:stretch;
+    -webkit-justify-content: space-between;
+    justify-content: space-between;
+    transition: opacity 0.9s ease-in-out;
+}
+
+.innerbox.animated{
+    animation: opening-after 0.5s ease-in-out 1.75s backwards;
+    -webkit-animation: opening-after 0.5s ease-in-out 1.75s backwards;
+    -moz-animation: opening-after 0.5s ease-in-out 1.75s backwards;
+    -o-animation: opening-after 0.5s ease-in-out 1.75s backwards;
+}
+
+.title{/*标题*/
+    position: relative;
+    top: 0%;
+    width: 100%;
+    height: 32px;
+    padding: 6px 2% 6px 2%;
+    background-color:#dddddd;
+}
+
+.chatbox{ /*内容盒*/
+
+    /*background-color: darkred;*/
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    top:0%;
+    width: 100%;
+    height: 100%;
+
+    overflow:auto;
+    padding: 6px 1% 6px 2%;
+}
+
+.chatbox::-webkit-scrollbar{ /*内容盒滚动条样式 chrome有效*/
+    width: 6px;
+}
+.chatbox::-webkit-scrollbar-track,.chatbox::-webkit-scrollbar-track-piece,::-webkit-scrollbar-button{ /*隐藏外轨、内轨、上下按钮*/
+    display: none;
+    width: 6px;
+}
+.chatbox::-webkit-scrollbar-thumb{ /*设置滑块样式*/
+    background-color: #dddddd;
+    border-radius: 3px;
+    width: 6px;
+}
+
+.messagebox{
+    width: 100%;
+    /*background-color:darkgray;*/
+    margin-top: 2px;
+    display: flex;
+    flex-basis: auto;
+}
+.message{
+    z-index: 1;
+    padding: 6px;
+    margin: 5px 16px 5px 10px;
+    border-radius: 20px;
+    min-height: 40px;
+    vertical-align: middle;
+    max-width: 60%;
+    display: flex;
+    flex-direction: column;
+    align-items:flex-start;
+}
+.message.leftside{
+    margin-right: auto;
+    background-color: #e1e9de; /*#f0ed03;*/
+}
+.message.leftside::before{
+    z-index: -1;
+    content: "";
+    position: absolute;
+    left: 2.5%;
+    margin-top: -6px;
+    width: 0px; 
+    height: 0px;
+    border: 0.8em solid;
+    border-color:#e1e9de transparent transparent transparent;
+}
+.message.rightside{
+    margin-left: auto;
+    background-color: #adec79;/*#ABF000*/
+}
+.message.rightside::before{
+    z-index: -1;
+    content: "";
+    position: absolute;
+    right: 1.6%;
+    margin-top: -6px;
+    margin-right: 3px;
+    width: 0px; 
+    height: 0px;
+    border: 0.8em solid;
+    border-color: #adec79 transparent transparent transparent;
+}
+.message img,.message video{
+    max-width: 96%;
+    margin: auto;
+    align-self: auto;
+}
+
+.message .linker a{
+    position: relative;
+    border: 2px #999999;
+    border-top: solid #999999;
+    border-left: solid #999999;
+    border-right: solid #999999;
+    display:block;
+    text-align: center;
+    width: 20px;
+    height: 20px;
+    text-decoration:none;
+}
+
+.textbox::-webkit-scrollbar{
+    display: none;
+}
+
+.textbox{ /*输入盒*/
+    /*background-color:goldenrod;*/
+    position: relative;
+    width: 100%;
+    height: 40px;
+
+
+    padding-top: 12px;
+    padding-bottom: 12px;
+
+    display: flex; /*弹性盒子布局 有助于输入框与发送按钮的对齐*/
+    display: -webkit-flex;
+
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-align-content: center;
+    align-content: center;
+
+    background-color:#dddddd;
+}
+
+input.textarea{ /*输入框*/
+    border: solid #cccccc 1px;
+    border-radius: 20px;
+    overflow:hidden;
+
+    width: 90%;
+    height: 32px;
+    margin-right: 10px;
+    margin-left: auto;
+
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.sendbutton{ /*发送按钮*/
+    background-color:#cccccc;
+    
+    display: flex;
+    
+    text-align: center;
+    font-size: 24px;
+
+    height: 32px;
+    width: 32px;
+    border-radius: 50%;
+
+    margin-right: auto;
+
+    align-self: center;
+    cursor: pointer;
+
+    transition: all 0.5s ease;
+}
+
+.sendbutton:hover{ /*发送渐变*/
+    background-color:#dddddd;
+}
+
+.sendarrow{ /*发送按钮的箭头*/
+    margin: auto;
+    width: 100%;
+    height: 100%;
+    transition: all 0.5s ease;
+}
+
+.sendarrow:hover{ /*发送按钮箭头渐变*/
+    transform: rotate(90deg);
+}
+
+.setting{
+    margin: auto;
+    width: 100%;
+    text-align: center;
+    transition: opacity 0.9s ease-in-out;
+}
+
+.transparent{
+    opacity: 0;
+}
+
+.resizeBox{
+    position: absolute;
+    /*padding-top: 2px;*/
+    /*background: red;*/
+    /*box-shadow:5px 5px 5px #888888;*/
+}
+
+.resizer{
+    position: absolute;
+    border: 2px solid #cccccc;
+    width: 175px;
+    height: 175px;
+    
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+
+    transform: rotate(45deg);
+}
+
+.resizer.leftUp{
+    left: -105px;
+    top: -105px;
+    cursor:nw-resize;
+}
+.resizer.leftUp::after{
+    content: '';
+    border: solid #cccccc;
+    border-left: 10px;
+    border-top: 10px;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    top: 45%;
+    left: 45%;
+    
+    transform: rotate(-45deg);
+}
+
+.resizer.rightUp{
+    right: -105px;
+    top: -105px;
+    cursor:ne-resize;
+}
+.resizer.rightUp::after{
+    content: '';
+    border: solid #cccccc;
+    border-right: 10px;
+    border-top: 10px;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    top: 45%;
+    left: 45%;
+
+    transform: rotate(-45deg);
+}
+
+.resizer.leftDown{
+    left: -105px;
+    bottom: -105px;
+    cursor:sw-resize;
+}
+.resizer.leftDown::after{
+    content: '';
+    border: solid #cccccc;
+    border-left: 10px;
+    border-bottom: 10px;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    top: 45%;
+    left: 45%;
+
+    transform: rotate(-45deg);
+}
+
+.resizer.rightDown{
+    right: -105px;
+    bottom: -105px;
+    cursor:se-resize;
+}
+.resizer.rightDown::after{
+    content: '';
+    border: solid #cccccc;
+    border-right: 10px;
+    border-bottom: 10px;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    top: 45%;
+    left: 45%;
+
+    transform: rotate(-45deg);
+}
+

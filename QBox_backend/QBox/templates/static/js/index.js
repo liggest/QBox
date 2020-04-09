@@ -98,12 +98,8 @@ var dragger=new Dragger();
 //var resizebox=document.getElementsByClassName("resizeBox")[0];
 //resizebox.parentNode.removeChild(resizebox);
 //mainBox.init(container,boxLists,dragger);
-var container=document.body;
-var mainbox=getBoxTemplate();
-var boxTemplate=mainbox.cloneNode(true);
-var resizebox=getResizeTemplate();
-var rboxTemplate=resizebox.cloneNode(true);
-var mainBox=new Box("主体",mainbox);
+
+//#region boxlist
 var boxLists=[];
 boxLists.findBoxByName=function (name) {
     var l=this.length;
@@ -123,11 +119,46 @@ boxLists.findBoxIdxByName=function (name) {
     }
     return -1;
 }
+
+boxLists.findBoxByNum=function (num) {
+    var l=this.length;
+    for(var i=0;i<l;i++){
+        if(this[i].boxNum==num){
+            return this[i];
+        }
+    }
+    return undefined;
+}
+boxLists.findBoxIdxByNum=function (num) {
+    var l=this.length;
+    for(var i=0;i<l;i++){
+        if(this[i].boxNum==num){
+            return i;
+        }
+    }
+    return -1;
+}
+
 boxLists.removeAt=function (idx) {
     return this.slice(0,idx).concat(this.slice(idx+1));
 }
-mainBox.init(container,boxLists,dragger);
-var currentFocus=mainBox;
+//#endregion
+
+var container=document.body;
+var mainbox=getBoxTemplate(); //待换成与后端通信的版本
+var boxTemplate=mainbox.cloneNode(true);
+var resizebox=getResizeTemplate(); //待换成与后端通信的版本
+var rboxTemplate=resizebox.cloneNode(true);
+var currentFocus=undefined;
+
+$.get("/box/init",{}).done(
+    function(data) {
+        var boxobj=data
+        var mainBox=new Box("主体",mainbox,boxobj);
+        mainBox.init(container,boxLists,dragger);
+        currentFocus=mainBox;
+    }
+);
 
 function addFavorite(url,title) {
     if (document) {

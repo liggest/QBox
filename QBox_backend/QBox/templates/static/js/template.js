@@ -7,6 +7,15 @@ function getBoxTemplate() {
         <div class="close">X</div>\
     </div>\
     <div class="midbox">\
+    \
+    </div>\
+    <div class="backbox">这里是设置</div>';
+    boxtemp.innerHTML=boxTemplateHTML;
+    boxtemp.style.position="absolute";
+    return boxtemp;
+}
+
+/*
         <div class="innerbox animated">\
             <div class="title" >主体</div>\
             <div class="chatbox" >\
@@ -18,13 +27,8 @@ function getBoxTemplate() {
                 </div>\
             </div>\
         </div>\
-    </div>\
-    <div class="backbox">这里是设置</div>';
-    boxtemp.innerHTML=boxTemplateHTML;
-    boxtemp.style.position="absolute";
-    return boxtemp;
-}
 
+*/
 function getResizeTemplate() {
     var rtemp=document.createElement("div");
     rtemp.className="resizeBox";
