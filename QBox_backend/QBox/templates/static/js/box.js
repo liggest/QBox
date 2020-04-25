@@ -19,9 +19,9 @@ function Box(name,content,boxobj) {
     this.boxName=name;
     this.content=content;
     this.boxObj=boxobj;
-    this.frontcontent=this.content.firstElementChild;
+    this.frontcontent=this.content.firstElementChild.firstElementChild;
     this.midcontent=this.content.getElementsByClassName("midbox")[0];
-    this.backcontent=this.content.lastElementChild;
+    this.backcontent=this.content.firstElementChild.lastElementChild;
     this.dragger=undefined;
     this.boxList=[];
     var box=this;
@@ -38,6 +38,9 @@ function Box(name,content,boxobj) {
         }
         container.prepend(this.content);
         this.dragger=dragger;
+        this.boxList=boxLists;
+
+        this.resizers=[getResizersTemplate(0),getResizersTemplate(1),getResizersTemplate(2),getResizersTemplate(3)];
         //var l=boxLists.length;
 
         /*if(l!=1){
@@ -48,7 +51,7 @@ function Box(name,content,boxobj) {
             this.move(dx+x,x);
         }*/
         setTimeout(function () {
-            var anis=box.content.parentNode.getElementsByClassName("animated");
+            var anis=box.content.getElementsByClassName("animated");
             var anisl=anis.length;
             for(var i =0;i<anisl;i++){
                 anis[0].classList.remove("animated");
@@ -56,8 +59,7 @@ function Box(name,content,boxobj) {
             //var mobj=messager.textobj("你好呀，有什么可以帮忙的吗？",0);
             //box.sendMsg(mobj);
         },2500)
-        
-        this.boxList=boxLists;
+
     }
     //#endregion
     //#region initByBoxData
@@ -71,14 +73,14 @@ function Box(name,content,boxobj) {
     }
     this.chatBoxInit=function () {
         //#region init
-        this.innercontent=this.midcontent.firstElementChild;
-        this.title=this.innercontent.firstElementChild;
+        this.title=this.midcontent.firstElementChild;
+        this.innercontent=this.title.nextElementSibling;
         this.title.innerText=this.boxName;
-        this.chat=this.title.nextElementSibling;
+        this.chat=this.innercontent.firstElementChild;
         this.text=this.chat.nextElementSibling;
         //#endregion
         //#region changeResize
-        var oldresizeBegin=this.resizeBegin;
+        /*var oldresizeBegin=this.resizeBegin;
         this.resizeBegin=function () {
             var scrolltemp=box.chat.scrollTop;
             oldresizeBegin();
@@ -86,10 +88,10 @@ function Box(name,content,boxobj) {
         }
         var oldresizeEnd=this.resizeEnd;
         this.resizeEnd=function () {
-            var scrolltemp=box.chat.scrollTop;
+            //var scrolltemp=box.chat.scrollTop;
             oldresizeEnd();            
-            box.chat.scrollTop=scrolltemp;
-        }
+            //box.chat.scrollTop=scrolltemp;
+        }*/
         //#endregion
         //#region scroll
         this.scrollAim=0;
@@ -313,14 +315,14 @@ function Box(name,content,boxobj) {
             }else if(text=="自毁"){
                 box.selfDestroy();
             }
-            /*else if(text=="云端留言板"){
+            else if(text=="云端留言板"){
                 $.get("/box/templates",{boxtype:"cloudmsg"}).done(
                     function(data) {
                         var boxobj=data
                         new Box("云端留言板",boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
                     }
                 );
-            }*/
+            }
             else{
                 /*
                 mobj=messager.textobj(text,1);
@@ -347,7 +349,7 @@ function Box(name,content,boxobj) {
     }
 
     this.getInnerBox=function(boxobj){
-        this.midcontent.innerHTML=boxobj["boxhtml"];
+        this.midcontent.innerHTML+=boxobj["boxhtml"];
         this.initByBoxData(boxobj);
     }
     this.getInnerBox(boxobj);
@@ -371,26 +373,33 @@ function Box(name,content,boxobj) {
         this.content.style.height=h+"px";
     }
     this.resizeBegin=function () {
-        var offsetX=offsets[this.content.style.position]["moveOffsetX"];
-        var offsetY=offsets[this.content.style.position]["moveOffsetY"];
+        //var offsetX=offsets[this.content.style.position]["moveOffsetX"];
+        //var offsetY=offsets[this.content.style.position]["moveOffsetY"];
 
         //this.resizeBox.style.position=this.content.style.position;
-        this.resizeBox.style.top=this.content.offsetTop-offsetX+"px";
-        this.resizeBox.style.left=this.content.offsetLeft-offsetY+"px";
-        this.resizeBox.style.width=this.content.offsetWidth+"px";
-        this.resizeBox.style.height=this.content.offsetHeight+"px";
-        this.content.style.top="0px";
-        this.content.style.left="0px";
-        this.content.style.margin="auto auto auto auto";
-        this.content.style.width="100%";
-        this.content.style.height="100%";
-        this.content.parentNode.replaceChild(this.resizeBox,this.content);
-        this.resizeBox.appendChild(this.content);
+
+        //this.resizeBox.style.top=this.content.offsetTop-offsetX+"px";
+        //this.resizeBox.style.left=this.content.offsetLeft-offsetY+"px";
+        //this.resizeBox.style.width=this.content.offsetWidth+"px";
+        //this.resizeBox.style.height=this.content.offsetHeight+"px";
+        //this.content.style.top="0px";
+        //this.content.style.left="0px";
+        //this.content.style.margin="auto auto auto auto";
+        //this.content.style.width="100%";
+        //this.content.style.height="100%";
+        //this.content.parentNode.replaceChild(this.resizeBox,this.content);
+        //this.resizeBox.appendChild(this.content);
+        this.content.prepend(this.resizers[3]);
+        this.content.prepend(this.resizers[2]);
+        this.content.prepend(this.resizers[1]);
+        this.content.prepend(this.resizers[0]);
         this.dragger.add(this.resizers[3],this.resizeRightDown);
         this.dragger.add(this.resizers[2],this.resizeLeftDown);
         this.dragger.add(this.resizers[1],this.resizeRightUp);
         this.dragger.add(this.resizers[0],this.resizeLeftUp);
-        this.dragger.add(this.resizeBox,this.dragger.onPressMove);
+        this.dragger.add(this.content,this.dragger.onPressMove);
+
+        //this.dragger.add(this.resizeBox,this.dragger.onPressMove);
 
         setTimeout(function () {
             box.frontcontent.classList.add("down");
@@ -400,83 +409,92 @@ function Box(name,content,boxobj) {
     }
     this.resizeEnd=function () {
         this.resizeMode=false;
-        var offsetX=offsets[this.content.style.position]["moveOffsetX"];
-        var offsetY=offsets[this.content.style.position]["moveOffsetY"];
+        //var offsetX=offsets[this.content.style.position]["moveOffsetX"];
+        //var offsetY=offsets[this.content.style.position]["moveOffsetY"];
 
-        this.content.style.top=this.resizeBox.offsetTop-offsetX+"px";
-        this.content.style.left=this.resizeBox.offsetLeft-offsetY+"px";
-        this.content.style.margin="0px 0px 0px 0px";
-        this.content.style.width=this.resizeBox.offsetWidth+"px";
-        this.content.style.height=this.resizeBox.offsetHeight+"px";
+        //this.content.style.top=this.resizeBox.offsetTop-offsetX+"px";
+        //this.content.style.left=this.resizeBox.offsetLeft-offsetY+"px";
+        //this.content.style.margin="0px 0px 0px 0px";
+        //this.content.style.width=this.resizeBox.offsetWidth+"px";
+        //this.content.style.height=this.resizeBox.offsetHeight+"px";
+
         this.dragger.remove(this.resizers[3],this.resizeRightDown);
         this.dragger.remove(this.resizers[2],this.resizeLeftDown);
         this.dragger.remove(this.resizers[1],this.resizeRightUp);
         this.dragger.remove(this.resizers[0],this.resizeLeftUp);
-        this.dragger.remove(this.resizeBox,this.dragger.onPressMove);
-        this.resizeBox.parentNode.replaceChild(this.content,this.resizeBox);
+        this.dragger.remove(this.content,this.dragger.onPressMove);
+        
+        this.content.removeChild(this.resizers[0]);
+        this.content.removeChild(this.resizers[1]);
+        this.content.removeChild(this.resizers[2]);
+        this.content.removeChild(this.resizers[3]);
+        //this.dragger.remove(this.resizeBox,this.dragger.onPressMove);
+
+        //this.resizeBox.parentNode.replaceChild(this.content,this.resizeBox);
 
         setTimeout(function () {
             box.frontcontent.classList.remove("down");
             box.midcontent.classList.remove("moreshadow");
         },0)
     }
-    this.resizeBox=rboxTemplate.cloneNode(true);
+    //this.resizeBox=rboxTemplate.cloneNode(true);
     this.resizeMode=false;
-    this.resizers=this.resizeBox.getElementsByClassName("resizer");
+    this.resizers=undefined;
+    //this.resizers=this.resizeBox.getElementsByClassName("resizer");
     this.resizeRightDown=function (event) {
         var dragger=box.dragger;
         if(dragger.isOnDrag){
-            var w=box.resizeBox.style.width;
-            var h=box.resizeBox.style.height;
-            w=w.endsWith("px")?Number(w.slice(0,-2)):box.resizeBox.offsetWidth;
-            h=h.endsWith("px")?Number(h.slice(0,-2)):box.resizeBox.offsetHeight;
-            box.resizeBox.style.width=w+dragger.deltaX+"px";
-            box.resizeBox.style.height=h+dragger.deltaY+"px";
+            var w=box.content.style.width;
+            var h=box.content.style.height;
+            w=w.endsWith("px")?Number(w.slice(0,-2)):box.content.offsetWidth;
+            h=h.endsWith("px")?Number(h.slice(0,-2)):box.content.offsetHeight;
+            box.content.style.width=w+dragger.deltaX+"px";
+            box.content.style.height=h+dragger.deltaY+"px";
         }
     }
     this.resizeLeftDown=function (event) {
         var dragger=box.dragger;
         if(dragger.isOnDrag){
-            var w=box.resizeBox.style.width;
-            var h=box.resizeBox.style.height;
-            var l=box.resizeBox.style.left;
-            w=w.endsWith("px")?Number(w.slice(0,-2)):box.resizeBox.offsetWidth;
-            h=h.endsWith("px")?Number(h.slice(0,-2)):box.resizeBox.offsetHeight;
+            var w=box.content.style.width;
+            var h=box.content.style.height;
+            var l=box.content.style.left;
+            w=w.endsWith("px")?Number(w.slice(0,-2)):box.content.offsetWidth;
+            h=h.endsWith("px")?Number(h.slice(0,-2)):box.content.offsetHeight;
             l=l==""?0:Number(l.slice(0,-2));
-            box.resizeBox.style.width=w-dragger.deltaX+"px";
-            box.resizeBox.style.height=h+dragger.deltaY+"px";
-            box.resizeBox.style.left=l+dragger.deltaX+"px";
+            box.content.style.width=w-dragger.deltaX+"px";
+            box.content.style.height=h+dragger.deltaY+"px";
+            box.content.style.left=l+dragger.deltaX+"px";
         }
     }
     this.resizeLeftUp=function (event) {
         var dragger=box.dragger;
         if(dragger.isOnDrag){
-            var w=box.resizeBox.style.width;
-            var h=box.resizeBox.style.height;
-            var l=box.resizeBox.style.left;
-            var t=box.resizeBox.style.top;
-            w=w.endsWith("px")?Number(w.slice(0,-2)):box.resizeBox.offsetWidth;
-            h=h.endsWith("px")?Number(h.slice(0,-2)):box.resizeBox.offsetHeight;
+            var w=box.content.style.width;
+            var h=box.content.style.height;
+            var l=box.content.style.left;
+            var t=box.content.style.top;
+            w=w.endsWith("px")?Number(w.slice(0,-2)):box.content.offsetWidth;
+            h=h.endsWith("px")?Number(h.slice(0,-2)):box.content.offsetHeight;
             l=l==""?0:Number(l.slice(0,-2));
             t=t==""?0:Number(t.slice(0,-2));
-            box.resizeBox.style.width=w-dragger.deltaX+"px";
-            box.resizeBox.style.height=h-dragger.deltaY+"px";
-            box.resizeBox.style.left=l+dragger.deltaX+"px";
-            box.resizeBox.style.top=t+dragger.deltaY+"px";
+            box.content.style.width=w-dragger.deltaX+"px";
+            box.content.style.height=h-dragger.deltaY+"px";
+            box.content.style.left=l+dragger.deltaX+"px";
+            box.content.style.top=t+dragger.deltaY+"px";
         }
     }
     this.resizeRightUp=function (event) {
         var dragger=box.dragger;
         if(dragger.isOnDrag){
-            var w=box.resizeBox.style.width;
-            var h=box.resizeBox.style.height;
-            var t=box.resizeBox.style.top;
-            w=w.endsWith("px")?Number(w.slice(0,-2)):box.resizeBox.offsetWidth;
-            h=h.endsWith("px")?Number(h.slice(0,-2)):box.resizeBox.offsetHeight;
+            var w=box.content.style.width;
+            var h=box.content.style.height;
+            var t=box.content.style.top;
+            w=w.endsWith("px")?Number(w.slice(0,-2)):box.content.offsetWidth;
+            h=h.endsWith("px")?Number(h.slice(0,-2)):box.content.offsetHeight;
             t=t==""?0:Number(t.slice(0,-2));
-            box.resizeBox.style.width=w+dragger.deltaX+"px";
-            box.resizeBox.style.height=h-dragger.deltaY+"px";
-            box.resizeBox.style.top=t+dragger.deltaY+"px";
+            box.content.style.width=w+dragger.deltaX+"px";
+            box.content.style.height=h-dragger.deltaY+"px";
+            box.content.style.top=t+dragger.deltaY+"px";
         }
     }
     //#endregion

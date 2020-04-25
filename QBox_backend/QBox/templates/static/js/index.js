@@ -151,7 +151,7 @@ var resizebox=getResizeTemplate(); //待换成与后端通信的版本
 var rboxTemplate=resizebox.cloneNode(true);
 var currentFocus=undefined;
 
-$.get("/box/init",{}).done(
+$.get("/box/init",{width:document.body.clientWidth,height:document.body.clientHeight}).done(
     function(data) {
         var boxobj=data
         var mainBox=new Box("主体",mainbox,boxobj);
@@ -160,6 +160,7 @@ $.get("/box/init",{}).done(
     }
 );
 
+//这个基本没用
 function addFavorite(url,title) {
     if (document) {
         try{

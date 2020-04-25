@@ -10,10 +10,15 @@ def MainPage(request):
 
 def boxInit(request):
     if request.method=="GET":
+        width=int(request.GET.get("width",1920) )
+        height=int(request.GET.get("height",1080) )
         boxobj={}
         boxobj["boxtype"]="chatbox"
         with open(os.path.join(BASE_DIR,"QBox/templates/boxtemplates/chatbox.html") ,"r",encoding="utf-8") as f:
             boxobj["boxhtml"]=f.read()
+        size=[int(width*0.625),int(height*0.625)]
+        boxobj["size"]=size
+        boxobj["position"]=[int(width/2-size[0]/2),int(height*0.02)]
         return JsonResponse(boxobj)
     
 

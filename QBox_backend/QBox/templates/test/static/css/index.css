@@ -184,6 +184,14 @@ body{
     box-shadow:2px 2px 5px #888888;
     transition: transform 0.6s ease-in-out,z-index 1s;
     -webkit-transition: transform 0.6s ease-in-out,z-index 1s;
+
+    display: flex;
+    display: -webkit-flex;
+    flex-direction:column;
+    -webkit-align-items:stretch;
+    align-items:stretch;
+    -webkit-justify-content: space-between;
+    justify-content: space-between;
 }
 .midbox::after{
     content: "";
