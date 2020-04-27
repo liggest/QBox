@@ -56,7 +56,7 @@ ROOT_URLCONF = 'QBox_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR,"QBox/templates")],
+        'DIRS': [os.path.join(BASE_DIR,"QBox/templates"),os.path.join(BASE_DIR,"users/templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

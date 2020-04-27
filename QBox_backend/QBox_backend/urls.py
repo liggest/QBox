@@ -22,4 +22,5 @@ urlpatterns = [
     path("box/",include("QBox.urls")),
     #path("cloudmsg/",include("cloudmsg.urls")),
     path('admin/', admin.site.urls),
+    path("accounts/", include('users.urls')), #用户系统的URL
 ]
