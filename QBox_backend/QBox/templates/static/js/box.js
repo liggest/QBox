@@ -22,6 +22,8 @@ function Box(name,content,boxobj) {
     this.frontcontent=this.content.firstElementChild.firstElementChild;
     this.midcontent=this.content.getElementsByClassName("midbox")[0];
     this.backcontent=this.content.firstElementChild.lastElementChild;
+    this.title=this.midcontent.firstElementChild;
+    this.title.innerText=this.boxName;
     this.dragger=undefined;
     this.boxList=[];
     var box=this;
@@ -73,9 +75,9 @@ function Box(name,content,boxobj) {
     }
     this.chatBoxInit=function () {
         //#region init
-        this.title=this.midcontent.firstElementChild;
-        this.innercontent=this.title.nextElementSibling;
-        this.title.innerText=this.boxName;
+        //this.title=this.midcontent.firstElementChild;
+        //this.title.innerText=this.boxName;
+        this.innercontent=this.midcontent.lastElementChild;        
         this.chat=this.innercontent.firstElementChild;
         this.text=this.chat.nextElementSibling;
         //#endregion
