@@ -165,6 +165,16 @@ $.get("/box/init",{width:document.body.clientWidth,height:document.body.clientHe
     }
 );
 
+window.onbeforeunload=function () {
+    var url = location.href+"box/exit/";
+    console.log(url);
+    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+        navigator.sendBeacon(url);
+        //这个↑是新技术，caniuse网上说，约94%的用户的浏览器支持这个
+    }
+    //return "12345";
+};
+
 //这个基本没用
 function addFavorite(url,title) {
     if (document) {
@@ -198,15 +208,6 @@ function KeyListener() {
     window.addEventListener("keypress",this.onPress);
 }
 var kl=new KeyListener();
-
-window.onbeforeunload=function () {
-    var url = location.href+"box/exit/";
-    console.log(url);
-    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-        navigator.sendBeacon(url);
-    }
-    //return "12345";
-};
 
 //#endregion
 //#region 去除初始动画

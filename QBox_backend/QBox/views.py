@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse,JsonResponse
 from QBox_backend.settings import BASE_DIR
-#from django.
+from django.views.decorators.csrf import csrf_exempt
 import os
 import hmac
 from datetime import datetime
@@ -43,13 +43,15 @@ def getInnerBox(request):
             boxobj=util.getBoxObj(request,bt,data)
             #boxobj["size"]=[320,500]
         return JsonResponse(boxobj)
-                
+
+@csrf_exempt          
 def userExit(request):
     if request.method=="POST":
         if request.user.is_authenticated:
             #应该做点啥
             pass
         uid=util.getUserKey(request)
-        del qbcore.qusers[uid]
+        if qbcore.qusers.get(uid,None):
+            del qbcore.qusers[uid]
         print("处理后事")
     return HttpResponse("")
