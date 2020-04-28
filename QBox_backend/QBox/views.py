@@ -25,7 +25,7 @@ def boxInit(request):
         height=int(request.GET.get("height",1080) )
         #request.session["init_time"]= str(datetime.now())
         uid=util.getUserKey(request)
-        qbcore.qusers[uid]=quser.quser()
+        qbcore.createUser(uid)
         print(qbcore.qusers)
         boxobj=util.getBoxObj(request,"chatbox",{})
         size=[int(width*0.625),int(height*0.625)]
@@ -44,14 +44,20 @@ def getInnerBox(request):
             #boxobj["size"]=[320,500]
         return JsonResponse(boxobj)
 
-@csrf_exempt          
+@csrf_exempt
 def userExit(request):
-    if request.method=="POST":
+    if request.method=="POST": #Bacon需要使用POST方法
         if request.user.is_authenticated:
             #应该做点啥
             pass
-        uid=util.getUserKey(request)
-        if qbcore.qusers.get(uid,None):
-            del qbcore.qusers[uid]
+        qbcore.deleteUser(request)
         print("处理后事")
     return HttpResponse("")
+
+@csrf_exempt
+def registerBox(request):
+    if request.method=="POST":
+        nb=Box.Box().initFromRequestData(request.POST)
+        qbcore.getUser(request).addBox(nb)
+    return HttpResponse("OK")
+

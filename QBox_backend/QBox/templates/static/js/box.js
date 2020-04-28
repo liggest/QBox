@@ -351,31 +351,58 @@ function Box(name,content,boxobj) {
         //#endregion
         //#region webconnection
         this.websocket=undefined;
-        this.backendinit=function (params) {
-            
+        var oldBackendinit=this.backendinit;
+        this.backendinit=function () {
+            oldBackendinit();
         }
         //#endregion
+    }
+
+    this.backendinit=function(){
+        $.post("/box/register/",{
+            id:box.boxNum,
+            name:box.boxName,
+            boxtype:box.boxObj["boxtype"],
+            size:box.boxObj["size"],
+            position:box.boxObj["position"]
+        }).done(
+            function(data) {
+                console.log("注册了框！");
+            }
+        );
     }
 
     this.getInnerBox=function(boxobj){
         this.midcontent.innerHTML+=boxobj["boxhtml"];
         this.initByBoxData(boxobj);
+        this.backendinit();
     }
     this.getInnerBox(boxobj);
 
     //#endregion
     //#region resize
     this.move=function (x,y) {
+        var [l,t]=this.getLeftTop();
+        this.content.style.left=l+x+"px";
+        this.content.style.top=t+y+"px";
+    }
+    this.getLeftTop=function () {
         var l=this.content.style.left;
         var t=this.content.style.top;
         l=l==""?0:Number(l.slice(0,-2));
         t=t==""?0:Number(t.slice(0,-2));
-        this.content.style.left=l+x+"px";
-        this.content.style.top=t+y+"px";
+        return [l,t];
     }
-    this.setLeftTop =function(x,y){
+    this.setLeftTop=function(x,y){
         this.content.style.left=x+"px";
         this.content.style.top=y+"px";
+    }
+    this.getSize=function () {
+        var w=this.content.style.width;
+        var h=this.content.style.height;
+        w=w.endsWith("px")?Number(w.slice(0,-2)):box.content.offsetWidth;
+        h=h.endsWith("px")?Number(h.slice(0,-2)):box.content.offsetHeight;
+        return [w,h];
     }
     this.resize=function (w,h) {
         this.content.style.width=w+"px";
@@ -453,10 +480,7 @@ function Box(name,content,boxobj) {
     this.resizeRightDown=function (event) {
         var dragger=box.dragger;
         if(dragger.isOnDrag){
-            var w=box.content.style.width;
-            var h=box.content.style.height;
-            w=w.endsWith("px")?Number(w.slice(0,-2)):box.content.offsetWidth;
-            h=h.endsWith("px")?Number(h.slice(0,-2)):box.content.offsetHeight;
+            var [w,h]=box.getSize();
             box.content.style.width=w+dragger.deltaX+"px";
             box.content.style.height=h+dragger.deltaY+"px";
         }
@@ -464,11 +488,8 @@ function Box(name,content,boxobj) {
     this.resizeLeftDown=function (event) {
         var dragger=box.dragger;
         if(dragger.isOnDrag){
-            var w=box.content.style.width;
-            var h=box.content.style.height;
+            var [w,h]=box.getSize();
             var l=box.content.style.left;
-            w=w.endsWith("px")?Number(w.slice(0,-2)):box.content.offsetWidth;
-            h=h.endsWith("px")?Number(h.slice(0,-2)):box.content.offsetHeight;
             l=l==""?0:Number(l.slice(0,-2));
             box.content.style.width=w-dragger.deltaX+"px";
             box.content.style.height=h+dragger.deltaY+"px";
@@ -478,12 +499,9 @@ function Box(name,content,boxobj) {
     this.resizeLeftUp=function (event) {
         var dragger=box.dragger;
         if(dragger.isOnDrag){
-            var w=box.content.style.width;
-            var h=box.content.style.height;
+            var [w,h]=box.getSize();
             var l=box.content.style.left;
             var t=box.content.style.top;
-            w=w.endsWith("px")?Number(w.slice(0,-2)):box.content.offsetWidth;
-            h=h.endsWith("px")?Number(h.slice(0,-2)):box.content.offsetHeight;
             l=l==""?0:Number(l.slice(0,-2));
             t=t==""?0:Number(t.slice(0,-2));
             box.content.style.width=w-dragger.deltaX+"px";
@@ -495,11 +513,8 @@ function Box(name,content,boxobj) {
     this.resizeRightUp=function (event) {
         var dragger=box.dragger;
         if(dragger.isOnDrag){
-            var w=box.content.style.width;
-            var h=box.content.style.height;
+            var [w,h]=box.getSize();
             var t=box.content.style.top;
-            w=w.endsWith("px")?Number(w.slice(0,-2)):box.content.offsetWidth;
-            h=h.endsWith("px")?Number(h.slice(0,-2)):box.content.offsetHeight;
             t=t==""?0:Number(t.slice(0,-2));
             box.content.style.width=w+dragger.deltaX+"px";
             box.content.style.height=h-dragger.deltaY+"px";
