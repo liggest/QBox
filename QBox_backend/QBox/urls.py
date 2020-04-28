@@ -5,5 +5,6 @@ from . import views
 urlpatterns = [
     #path("",views.MainPage),
     path("init/",views.boxInit),
-    path("templates/",views.getInnerBox)
+    path("templates/",views.getInnerBox),
+    path("exit/",views.userExit)
 ]

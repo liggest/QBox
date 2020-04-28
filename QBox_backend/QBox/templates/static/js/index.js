@@ -145,18 +145,23 @@ boxLists.removeAt=function (idx) {
 //#endregion
 
 var container=document.body;
-var mainbox=getBoxTemplate(); //待换成与后端通信的版本
+var mainbox=getBoxTemplate(); //待换成与后端通信的版本？
 var boxTemplate=mainbox.cloneNode(true);
-var resizebox=getResizeTemplate(); //待换成与后端通信的版本
+var resizebox=getResizeTemplate(); //待换成与后端通信的版本？
 var rboxTemplate=resizebox.cloneNode(true);
 var currentFocus=undefined;
 
+//这里是网页初始化 请求成功了才能生成框
 $.get("/box/init",{width:document.body.clientWidth,height:document.body.clientHeight}).done(
     function(data) {
         var boxobj=data
         var mainBox=new Box("主体",mainbox,boxobj);
         mainBox.init(container,boxLists,dragger);
         currentFocus=mainBox;
+    }
+).fail(
+    function (xhr, status) {
+        alert("网页初始化失败！请检查网络连接…");
     }
 );
 
@@ -193,6 +198,21 @@ function KeyListener() {
     window.addEventListener("keypress",this.onPress);
 }
 var kl=new KeyListener();
+
+window.onbeforeunload=function () {
+    var url = location.href+"box/exit";
+    console.log(url);
+    $.ajax({
+        type: "GET",
+        url:url,
+        data:{},
+        dataType: "JSON",
+        async:false, //必须采用同步方法
+        success: function(result) {console.log(233);}
+    });
+    //$.get("/box/exit",{});
+    return "12345";
+};
 
 //#endregion
 //#region 去除初始动画
