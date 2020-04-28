@@ -4,6 +4,17 @@ body{
     height: 100%;
 }
 
+.resizeBox{
+    position: absolute;
+    width: 960px;
+    height: 540px;
+    left: 480px;
+    top: 270px;
+    /*padding-top: 2px;*/
+    /*background: red;*/
+    /*box-shadow:5px 5px 5px #888888;*/
+}
+
 .box::-webkit-scrollbar{ /*对chrome有效的自定义滚动条样式*/
     display: none;
     width: 6px;
@@ -44,7 +55,7 @@ body{
             -o-transform: translate(0px,0px);
         }
         79%{
-            width: 970px;
+            width: 100%;
             height: 40px;
             transform:translate(10%,0px);
             -moz-transform: translate(10%,0px);
@@ -52,7 +63,7 @@ body{
             -o-transform: translate(10%,0px);
         }
         85%{
-            width: 960px;
+            width: 96%;
             height: 40px;
             transform:translate(-5%,0px);
             -moz-transform: translate(-5%,0px);
@@ -60,10 +71,10 @@ body{
             -o-transform: translate(-5%,0px);
         }
         91%{
-            height: 560px;
+            height: 104%;
         }
         100%{
-            height: 540px;
+            height: 100%;
             transform:translate(0px,0px);
             -moz-transform: translate(0px,0px);
             -webkit-transform: translate(0px,0px);
@@ -77,11 +88,14 @@ body{
         -moz-animation: opening 1.75s ease;
         -o-animation: opening 1.75s ease;
     }
+    
     .box{
+        width: 100%;
+        height: 100%;
+        /*
         left:50%;
-        width: 960px;
-        height: 540px;
         margin: auto 0 auto -480px;
+        */
     }
 }
 
@@ -469,13 +483,6 @@ input.textarea{ /*输入框*/
 
 .transparent{
     opacity: 0;
-}
-
-.resizeBox{
-    position: absolute;
-    /*padding-top: 2px;*/
-    /*background: red;*/
-    /*box-shadow:5px 5px 5px #888888;*/
 }
 
 .resizer{
