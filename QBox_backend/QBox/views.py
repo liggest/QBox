@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse,JsonResponse
 from QBox_backend.settings import BASE_DIR
+#from django.
 import os
 import hmac
 from datetime import datetime
@@ -22,7 +23,7 @@ def boxInit(request):
     if request.method=="GET":
         width=int(request.GET.get("width",1920) )
         height=int(request.GET.get("height",1080) )
-        request.session["init_time"]= str(datetime.now())
+        #request.session["init_time"]= str(datetime.now())
         uid=util.getUserKey(request)
         qbcore.qusers[uid]=quser.quser()
         print(qbcore.qusers)
@@ -37,13 +38,14 @@ def boxInit(request):
 def getInnerBox(request):
     if request.method=="GET":
         bt = request.GET.get("boxtype",None)
+        data = request.GET.get("data",{})
         if bt:
-            boxobj=util.getBoxObj(request,bt,{})
+            boxobj=util.getBoxObj(request,bt,data)
             #boxobj["size"]=[320,500]
         return JsonResponse(boxobj)
                 
 def userExit(request):
-    if request.method=="GET":
+    if request.method=="POST":
         if request.user.is_authenticated:
             #应该做点啥
             pass

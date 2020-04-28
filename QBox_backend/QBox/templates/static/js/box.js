@@ -319,7 +319,7 @@ function Box(name,content,boxobj) {
             }
             /*
             else if(text=="云端留言板"){
-                $.get("/box/templates",{boxtype:"cloudmsg"}).done(
+                $.get("/box/templates",{boxtype:"cloudmsg",data:{}}).done(
                     function(data) {
                         var boxobj=data
                         new Box("云端留言板",boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
