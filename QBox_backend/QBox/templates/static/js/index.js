@@ -199,6 +199,21 @@ function KeyListener() {
 }
 var kl=new KeyListener();
 
+window.onbeforeunload=function () {
+    var url = location.href+"box/exit";
+    console.log(url);
+    $.ajax({
+        type: "GET",
+        url:url,
+        data:{},
+        dataType: "JSON",
+        async:false, //必须采用同步方法
+        success: function(result) {console.log(233);}
+    });
+    //$.get("/box/exit",{});
+    return "12345";
+};
+
 //#endregion
 //#region 去除初始动画
 /*
