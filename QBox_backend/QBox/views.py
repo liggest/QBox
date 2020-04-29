@@ -61,9 +61,12 @@ def registerBox(request):
     if request.method=="POST":
         nb=Box.Box.getBoxFromRequestData(request.POST)
         if qbcore.getUser(request).addBox(nb):
+            print("注册了框",nb.name)
+            print(qbcore.getUser(request).boxes)
             return HttpResponse("添加了框~")
     return HttpResponse("并没有做什么")
 
+'''
 def getWebSocket(request,bid):
     print("ws")
     if request.is_websocket():
@@ -75,5 +78,5 @@ def getWebSocket(request,bid):
                 print(wsbox.websocket==request.websocket)
             else:
                 ws.websocket=request.websocket
-
+'''
 

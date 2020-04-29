@@ -135,6 +135,9 @@ function Box(name,content,boxobj) {
             var html=messager.mobj2HTML(mobj);
             html.addEventListener("dragstart",this.onMsgDragStart);
             this.chat.appendChild(html);
+
+            this.websocket.send(JSON.stringify(mobj));
+
             setTimeout(function () {
                 box.rollscroll(box.chat,box.chat.scrollHeight-box.chat.clientHeight,10);
             },20);
@@ -352,12 +355,12 @@ function Box(name,content,boxobj) {
         //#region webconnection
         this.websocket=undefined;
         this.websocketinit=function () {
-            var wsurl = location.host+"/box/ws/";//+ this.boxNum +"/";
+            var wsurl = location.host+"/box/ws/"+ this.boxNum +"/";
             console.log(wsurl);
             this.websocket = new WebSocket("ws://"+wsurl);
             this.websocket.onopen = function () {
                 console.log("连接成功");
-                box.websocket.send("发送数据");
+                box.websocket.send(JSON.stringify({msg:"发送数据"}));
             };
             
             this.websocket.onmessage = function (evt) {
@@ -389,7 +392,7 @@ function Box(name,content,boxobj) {
             size:box.boxObj["size"],
             position:box.boxObj["position"]
         }).done(function(data) {
-            console.log("注册了框！");
+            console.log(data);
         });
         return xhr;
     }
