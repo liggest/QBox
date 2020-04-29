@@ -317,7 +317,7 @@ function Box(name,content,boxobj) {
             }else if(text=="自毁"){
                 box.selfDestroy();
             }
-            /*
+            
             else if(text=="云端留言板"){
                 $.get("/box/templates",{boxtype:"cloudmsg",data:{}}).done(
                     function(data) {
@@ -325,7 +325,7 @@ function Box(name,content,boxobj) {
                         new Box("云端留言板",boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
                     }
                 );
-            }*/
+            }
             else{
                 /*
                 mobj=messager.textobj(text,1);
