@@ -8,6 +8,8 @@ class quser():
     def addBox(self,box):
         if box:
             self.boxes[box.id]=box
+            return True
+        return False
 
     def deleteBox(self,bid):
         if self.boxes.get(bid,None):

@@ -13,13 +13,16 @@ class Box():
         self.size=[0,0]
         self.position=[0,0]
 
-    def initFromRequestData(self,rdata):
+    @staticmethod
+    def getBoxFromRequestData(rdata):
         try:
-            self.id=rdata["id"]
-            self.name=rdata["name"]
-            self.boxtype=rdata["boxtype"]
-            self.size=rdata.get("size",(1200,675))
-            self.position=rdata.get("position",(360,13))
-            return self
+            b=Box()
+            b.id=rdata["id"]
+            b.name=rdata["name"]
+            b.boxtype=rdata["boxtype"]
+            b.size=rdata.get("size",(1200,675))
+            b.position=rdata.get("position",(360,13))
+            return b
         except:
             return None
+

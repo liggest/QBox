@@ -18,6 +18,7 @@ qbcore=core.core()
 def MainPage(request):
     if request.method=="GET":
         return render(request,"index_clear.html")
+    return HttpResponse("这里什么都没有")
 
 def boxInit(request):
     if request.method=="GET":
@@ -26,13 +27,13 @@ def boxInit(request):
         #request.session["init_time"]= str(datetime.now())
         uid=util.getUserKey(request)
         qbcore.createUser(uid)
-        print(qbcore.qusers)
         boxobj=util.getBoxObj(request,"chatbox",{})
         size=[int(width*0.625),int(height*0.625)]
         boxobj["size"]=size
         boxobj["position"]=[int(width/2-size[0]/2),int(height*0.02)]
         print("初始化")
         return JsonResponse(boxobj)
+    return JsonResponse({})
     
 
 def getInnerBox(request):
@@ -42,7 +43,8 @@ def getInnerBox(request):
         if bt:
             boxobj=util.getBoxObj(request,bt,data)
             #boxobj["size"]=[320,500]
-        return JsonResponse(boxobj)
+            return JsonResponse(boxobj)
+    return JsonResponse({})
 
 @csrf_exempt
 def userExit(request):
@@ -57,7 +59,21 @@ def userExit(request):
 @csrf_exempt
 def registerBox(request):
     if request.method=="POST":
-        nb=Box.Box().initFromRequestData(request.POST)
-        qbcore.getUser(request).addBox(nb)
-    return HttpResponse("OK")
+        nb=Box.Box.getBoxFromRequestData(request.POST)
+        if qbcore.getUser(request).addBox(nb):
+            return HttpResponse("添加了框~")
+    return HttpResponse("并没有做什么")
+
+def getWebSocket(request,bid):
+    print("ws")
+    if request.is_websocket():
+        wsbox=qbcore.getUser(request).getBox(bid)
+        if wsbox:
+            if hasattr(wsbox,"websocket"):
+                print(wsbox.websocket)
+                print(request.websocket)
+                print(wsbox.websocket==request.websocket)
+            else:
+                ws.websocket=request.websocket
+
 

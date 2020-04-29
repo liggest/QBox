@@ -351,25 +351,47 @@ function Box(name,content,boxobj) {
         //#endregion
         //#region webconnection
         this.websocket=undefined;
+        this.websocketinit=function () {
+            var wsurl = location.host+"/box/ws/";//+ this.boxNum +"/";
+            console.log(wsurl);
+            this.websocket = new WebSocket("ws://"+wsurl);
+            this.websocket.onopen = function () {
+                console.log("连接成功");
+                box.websocket.send("发送数据");
+            };
+            
+            this.websocket.onmessage = function (evt) {
+                var received_msg = evt.data;
+                console.log("有消息了："+received_msg);
+            };
+
+            this.websocket.onclose = function () {
+                console.log("连接关闭");
+            };
+
+        }
         var oldBackendinit=this.backendinit;
         this.backendinit=function () {
-            oldBackendinit();
+            var xhr=oldBackendinit();
+            xhr.done(function(data) {
+                console.log("hack了框！");
+                box.websocketinit();
+            });
         }
         //#endregion
     }
 
     this.backendinit=function(){
-        $.post("/box/register/",{
+        var xhr=$.post("/box/register/",{
             id:box.boxNum,
             name:box.boxName,
             boxtype:box.boxObj["boxtype"],
             size:box.boxObj["size"],
             position:box.boxObj["position"]
-        }).done(
-            function(data) {
-                console.log("注册了框！");
-            }
-        );
+        }).done(function(data) {
+            console.log("注册了框！");
+        });
+        return xhr;
     }
 
     this.getInnerBox=function(boxobj){

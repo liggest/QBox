@@ -7,5 +7,6 @@ urlpatterns = [
     path("init/",views.boxInit),
     path("templates/",views.getInnerBox),
     path("register/",views.registerBox),
-    path("exit/",views.userExit)
+    path("exit/",views.userExit),
+    path("ws/<int:bid>/",views.getWebSocket),
 ]
