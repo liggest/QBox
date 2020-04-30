@@ -7,11 +7,12 @@ class quser():
 
     def addBox(self,box):
         if box:
-            self.boxes[box.id]=box
+            self.boxes[str(box.id)]=box
             return True
         return False
 
     def deleteBox(self,bid):
+        bid=str(bid)
         if self.boxes.get(bid,None):
             del self.boxes[bid]
             return True
@@ -19,4 +20,4 @@ class quser():
             return False
     
     def getBox(self,bid):
-        return self.boxes.get(bid,None)
+        return self.boxes.get(str(bid),None)

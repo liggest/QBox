@@ -38,13 +38,19 @@ def getBoxHTML(filename):
     t=Template(HTMLtemplate)
     return t
 
-def getUserKey(request):
+def getUserKey(request,isScope=False):
     """
         尝试从request得到用户的唯一标识
     """
-    if request.user.is_authenticated:
-        return request.user.get_username()
-    if not request.session.session_key:
-        request.session.create()
-    return request.session.session_key
+    if isScope:
+        us=request["user"]
+        se=request["session"]
+    else:
+        us=request.user
+        se=request.session
+    if us.is_authenticated:
+        return us.get_username()
+    if not se.session_key:
+        se.create()
+    return se.session_key
 

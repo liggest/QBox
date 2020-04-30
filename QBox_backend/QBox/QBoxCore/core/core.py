@@ -18,8 +18,8 @@ class core():
         else:
             return False
 
-    def getUser(self,request):
-        uid=util.getUserKey(request)
+    def getUser(self,request,isScope=False):
+        uid=util.getUserKey(request,isScope)
         qu=self.getUserFromID(uid)
         if qu:
             return qu
