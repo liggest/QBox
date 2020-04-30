@@ -5,13 +5,13 @@ const longPressInterval=700;
 
 var messager=new Messager();
 
-function getBoxNum(){
+var getBoxNum =function(){
     var x=-1;
     return (function(){
         x+=1;
         return x;
-    })();
-}
+    });
+}();
 
 function Box(name,content,boxobj) {
     //#region init
@@ -136,7 +136,8 @@ function Box(name,content,boxobj) {
             html.addEventListener("dragstart",this.onMsgDragStart);
             this.chat.appendChild(html);
 
-            this.websocket.send(JSON.stringify(mobj));
+            var wsmsg=messager.getWsMsg("msg",mobj);
+            this.websocket.send(JSON.stringify(wsmsg));
 
             setTimeout(function () {
                 box.rollscroll(box.chat,box.chat.scrollHeight-box.chat.clientHeight,10);
@@ -256,7 +257,12 @@ function Box(name,content,boxobj) {
             }else if(text.startsWith("新建")){
                 var nbName=text.substring(2).trim();
                 if(nbName!=""){
-                    new Box(nbName,boxTemplate.cloneNode(true)).init(container,boxLists,dragger);
+                    $.get("/box/templates",{boxtype:"chatbox",data:{}}).done(
+                        function(data) {
+                            var boxobj=data
+                            new Box(nbName,boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
+                        }
+                    );
                 }else{
                     mobj=messager.textobj("请给我弟弟一个名字",0);
                     box.sendMsg(mobj);
@@ -359,17 +365,38 @@ function Box(name,content,boxobj) {
             console.log(wsurl);
             this.websocket = new WebSocket("ws://"+wsurl);
             this.websocket.onopen = function () {
-                console.log("连接成功");
-                box.websocket.send(JSON.stringify({msg:"发送数据"}));
+                console.log(box.boxName+" 连接成功");
+                //box.websocket.send(JSON.stringify({msg:"发送数据"}));
+                box.websocket.last=new Date().getTime();
+                box.websocket.heartbeat=setInterval(function () {
+                    var current=new Date().getTime();
+                    if(current-box.websocket.last>35000){
+                        box.websocket.close();
+                        clearInterval(box.websocket.heartbeat);
+                        alert("心跳丢失！连接已关闭");
+                    }else{
+                        if (box.websocket.bufferedAmount == 0 && box.websocket.readyState == 1) {
+                            var wsmsg=messager.getWsMsg("heartbeat","上");
+                            box.websocket.send(JSON.stringify(wsmsg));
+                            console.log(box.boxName+" 发送了心跳");
+                        }
+                    }
+                },30000);
             };
             
             this.websocket.onmessage = function (evt) {
-                var received_msg = evt.data;
-                console.log("有消息了："+received_msg);
+                var received = JSON.parse(evt.data);
+                if (received["wsMsgType"]=="heartbeat"){
+                    console.log(box.boxName+" 收到了心跳");
+                    box.websocket.last=new Date().getTime();
+                }else if(received["wsMsgType"]=="msg"){
+                    console.log(box.boxName+" 有消息了："+received["wsMsg"]);
+                }
             };
 
             this.websocket.onclose = function () {
                 console.log("连接关闭");
+                clearInterval(box.websocket.heartbeat);
             };
 
         }
@@ -794,5 +821,9 @@ function Messager() {
             result=result.substring(0,result.length-1);
         }
         return result;
+    }
+    this.getWsMsg=function (type,msg) {
+        var wsmsg={wsMsgType:type,wsMsg:msg};
+        return wsmsg
     }
 }
