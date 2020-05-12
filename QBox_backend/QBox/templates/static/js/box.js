@@ -360,52 +360,87 @@ function Box(name,content,boxobj) {
         //#endregion
         //#region webconnection
         this.websocket=undefined;
-        this.websocketinit=function () {
+        this.wsConnect=function () {
             var wsurl = location.host+"/box/ws/"+ this.boxNum +"/";
-            console.log(wsurl);
-            this.websocket = new WebSocket("ws://"+wsurl);
+            try{
+                this.websocket = new WebSocket("ws://"+wsurl);
+                this.wsEvents();
+            }catch(e){
+                console.log("连接失败！");
+                this.wsReconnect();
+            }
+        }
+        this.wsEvents=function () {
             this.websocket.onopen = function () {
                 console.log(box.boxName+" 连接成功");
                 //box.websocket.send(JSON.stringify({msg:"发送数据"}));
-                box.websocket.last=new Date().getTime();
-                box.websocket.heartbeat=setInterval(function () {
-                    var current=new Date().getTime();
-                    if(current-box.websocket.last>35000){
-                        box.websocket.close();
-                        clearInterval(box.websocket.heartbeat);
-                        alert("心跳丢失！连接已关闭");
-                    }else{
-                        if (box.websocket.bufferedAmount == 0 && box.websocket.readyState == 1) {
-                            var wsmsg=messager.getWsMsg("heartbeat","上");
-                            box.websocket.send(JSON.stringify(wsmsg));
-                            console.log(box.boxName+" 发送了心跳");
-                        }
-                    }
-                },30000);
-            };
-            
+                box.wsHeartBeat();
+            }
             this.websocket.onmessage = function (evt) {
                 var received = JSON.parse(evt.data);
                 if (received["wsMsgType"]=="heartbeat"){
                     console.log(box.boxName+" 收到了心跳");
-                    box.websocket.last=new Date().getTime();
+                    box.wsHeartBeatReset();
                 }else if(received["wsMsgType"]=="msg"){
                     console.log(box.boxName+" 有消息了："+received["wsMsg"]);
+                    box.wsHeartBeatReset();
                 }
-            };
-
+            }
             this.websocket.onclose = function () {
                 console.log("连接关闭");
                 clearInterval(box.websocket.heartbeat);
-            };
-
+                box.wsReconnect();
+            }
+            this.websocket.onerror = function () {
+                console.log("连接异常");
+                clearInterval(box.websocket.heartbeat);
+                box.wsReconnect();
+            }
+        }
+        this.wsReconnectLock=false;
+        this.wsReconnect=function() {
+            if(this.wsReconnectLock){ //加锁，避免重复重连
+                return;
+            }
+            console.log("尝试重连..");
+            this.wsReconnectLock=true;
+            this.wsReconnectTime && clearTimeout(this.wsReconnectTime);
+            this.wsReconnectTime=setTimeout(function () {
+                box.wsConnect();
+                box.wsReconnectLock=false;
+            },4000) //4秒后尝试重连，避免连接太频繁
+        }
+        this.wsHeartBeat=function () {
+            this.websocket.last=new Date().getTime();
+            this.websocket.lostnum=3;
+            this.websocket.heartbeat=setInterval(function () {
+                var current=new Date().getTime();
+                if(current-box.websocket.last>35000){
+                    box.websocket.lostnum--;
+                    console.log("没收到心跳...剩余尝试机会："+box.websocket.lostnum);
+                    if(box.websocket.lostnum<=0){
+                        clearInterval(box.websocket.heartbeat);
+                        box.websocket.close();
+                        console.log("心跳丢失！");
+                    }
+                }else{
+                    if (box.websocket.bufferedAmount == 0 && box.websocket.readyState == 1) {
+                        var wsmsg=messager.getWsMsg("heartbeat","上");
+                        box.websocket.send(JSON.stringify(wsmsg));
+                        console.log(box.boxName+" 发送了心跳");
+                    }
+                }
+            },30000);
+        }
+        this.wsHeartBeatReset=function () {
+            this.websocket.last=new Date().getTime();
         }
         var oldBackendinit=this.backendinit;
         this.backendinit=function () {
             var xhr=oldBackendinit();
             xhr.done(function(data) {
                 console.log("hack了框！");
-                box.websocketinit();
+                box.wsConnect();
             });
         }
         //#endregion
