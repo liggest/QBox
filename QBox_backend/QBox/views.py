@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse,JsonResponse
 from QBox_backend.settings import BASE_DIR
-from django.views.decorators.csrf import csrf_exempt
+#from django.views.decorators.csrf import csrf_exempt
 import os
 import hmac
 from datetime import datetime
@@ -46,7 +46,7 @@ def getInnerBox(request):
             return JsonResponse(boxobj)
     return JsonResponse({})
 
-@csrf_exempt
+#@csrf_exempt
 def userExit(request):
     if request.method=="POST": #Bacon需要使用POST方法
         if request.user.is_authenticated:
@@ -56,7 +56,7 @@ def userExit(request):
         print("处理",util.getUserKey(request),"的后事")
     return HttpResponse("")
 
-@csrf_exempt
+#@csrf_exempt
 def registerBox(request):
     if request.method=="POST":
         nb=Box.Box.getBoxFromRequestData(request.POST)

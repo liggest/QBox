@@ -37,12 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'channels',
-    'users',#用户系统
-    'QBox'
+    'corsheaders', #跨域
+    'channels', #用于支持websocket
+    'users', #用户系统
+    'QBox' #主应用
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', #跨域中间件
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -64,6 +66,14 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+#CORS_ORIGIN_ALLOW_ALL = True 这个会允许全部跨域
+CORS_ORIGIN_WHITELIST = ( #跨域白名单
+    'http://127.0.0.1:8000',
+    'http://localhost:8000'
+)
+CORS_ALLOW_CREDENTIALS = True #允许携带Cookie
+
 
 TEMPLATES = [
     {

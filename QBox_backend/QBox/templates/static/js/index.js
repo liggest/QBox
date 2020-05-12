@@ -144,6 +144,19 @@ boxLists.removeAt=function (idx) {
 }
 //#endregion
 
+//csrf问题
+var csrftoken = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+var csrfmethods = ["POST","DELETE","PUT"];
+//console.log(csrftoken);
+
+$.ajaxSetup({  //为csrfmethods添加csrf头
+    beforeSend: function(xhr, settings) {
+        if (csrfmethods.includes(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
+
 var container=document.body;
 var mainbox=getBoxTemplate(); //待换成与后端通信的版本？
 var boxTemplate=mainbox.cloneNode(true);
