@@ -38,6 +38,7 @@ def login(request):
             user = auth.authenticate(username=username, password=password)
         if user is not None and user.is_active:
             auth.login(request, user)
+            #return HttpResponseRedirect("/")
             return render(request, 'users/login.html', {'form': None})
         else:
             return render(request, 'users/login.html', {'form': form, 'message': '密码错误，请重试'})
@@ -51,4 +52,6 @@ def login(request):
 @login_required
 def logout(request):
     auth.logout(request)
-    return HttpResponseRedirect("/")
+    form = LoginForm()
+    return render(request, 'users/login.html', {'form': form})
+    #return HttpResponseRedirect("/")
