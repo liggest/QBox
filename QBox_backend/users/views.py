@@ -38,7 +38,7 @@ def login(request):
             user = auth.authenticate(username=username, password=password)
         if user is not None and user.is_active:
             auth.login(request, user)
-            return HttpResponseRedirect("/")
+            return render(request, 'users/login.html', {'form': None})
         else:
             return render(request, 'users/login.html', {'form': form, 'message': '密码错误，请重试'})
     else:
