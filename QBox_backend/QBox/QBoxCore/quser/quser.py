@@ -2,7 +2,7 @@
 class quser():
 
     def __init__(self):
-
+        self.screenSize=(0,0)
         self.boxes={}
 
     def addBox(self,box):

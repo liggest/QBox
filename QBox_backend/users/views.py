@@ -6,8 +6,9 @@ from .forms import RegistrationForm, LoginForm
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 
-
+@xframe_options_sameorigin
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
@@ -27,7 +28,7 @@ def register(request):
 
     return render(request, 'users/registration.html', {'form': form})
 
-
+@xframe_options_sameorigin
 def login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -46,7 +47,7 @@ def login(request):
 
 
 
-
+@xframe_options_sameorigin
 @login_required
 def logout(request):
     auth.logout(request)

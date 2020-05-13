@@ -1,14 +1,13 @@
 from django.shortcuts import render
 from django.http import HttpResponse,JsonResponse
 from QBox_backend.settings import BASE_DIR
-#from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt
 import os
 import hmac
 from datetime import datetime
 
-from .QBoxCore.Box import Box
-from .QBoxCore.core import core
-from .QBoxCore.core import util
+from .QBoxCore.Box import Box,boxdata
+from .QBoxCore.core import core,util
 from .QBoxCore.quser import quser
 
 qbcore=core.core()
@@ -26,7 +25,8 @@ def boxInit(request):
         height=int(request.GET.get("height",1080) )
         #request.session["init_time"]= str(datetime.now())
         uid=util.getUserKey(request)
-        qbcore.createUser(uid)
+        user=qbcore.createUser(uid)
+        user.screenSize=(width,height)
         boxobj=util.getBoxObj(request,"chatbox",{})
         size=[int(width*0.625),int(height*0.625)]
         boxobj["size"]=size
@@ -41,12 +41,16 @@ def getInnerBox(request):
         bt = request.GET.get("boxtype",None)
         data = request.GET.get("data",{})
         if bt:
+            bt,data=boxdata.updateByDefault(bt,data)
             boxobj=util.getBoxObj(request,bt,data)
+            boxobj["boxName"]=data.get("boxName",None)
+            boxobj["size"]=data.get("size",(200,200))
+            boxobj["position"]=data.get("position",(20,20))
             #boxobj["size"]=[320,500]
             return JsonResponse(boxobj)
     return JsonResponse({})
 
-#@csrf_exempt
+@csrf_exempt
 def userExit(request):
     if request.method=="POST": #Bacon需要使用POST方法
         if request.user.is_authenticated:

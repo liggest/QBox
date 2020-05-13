@@ -157,6 +157,7 @@ $.ajaxSetup({  //为csrfmethods添加csrf头
     }
 });
 
+
 var container=document.body;
 var mainbox=getBoxTemplate(); //待换成与后端通信的版本？
 var boxTemplate=mainbox.cloneNode(true);

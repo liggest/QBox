@@ -238,6 +238,7 @@ function Box(name,content,boxobj) {
         this.suffix="";
         this.analyze=function (text) {
             var mobj;
+            var ts=text.split(" ");
             if(text.startsWith("我要")){
                 var stext=text.substring(2).trim();
                 var result="https://magi.com/search?q="+encodeURIComponent(stext);
@@ -326,7 +327,7 @@ function Box(name,content,boxobj) {
             }else if(text=="自毁"){
                 box.selfDestroy();
             }
-            
+            /*
             else if(text=="云端留言板"){
                 $.get("/box/templates",{boxtype:"cloudmsg",data:{}}).done(
                     function(data) {
@@ -334,7 +335,7 @@ function Box(name,content,boxobj) {
                         new Box("云端留言板",boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
                     }
                 );
-            }
+            }*/
             else{
                 /*
                 mobj=messager.textobj(text,1);
@@ -382,8 +383,22 @@ function Box(name,content,boxobj) {
                     console.log(box.boxName+" 收到了心跳");
                     box.wsHeartBeatReset();
                 }else if(received["wsMsgType"]=="msg"){
-                    console.log(box.boxName+" 有消息了："+received["wsMsg"]);
+                    box.sendMsg(received["wsMsg"]);
+                    console.log(box.boxName+" 有消息了：");
+                    console.log(received["wsMsg"]);
                     box.wsHeartBeatReset();
+                }else if(received["wsMsgType"]=="cmd"){
+                    //收到指令，备用
+                    console.log(box.boxName+" 收到指令："+received["wsMsg"]);
+                    if(received["wsMsg"]=="login"){
+                        $.get("/box/templates",{boxtype:"login",data:{}}).done(
+                            function(data) {
+                                var boxobj=data;
+                                var nbName=boxobj["boxName"];
+                                new Box(nbName || "未命名框",boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
+                            }
+                        );
+                    }
                 }
             }
             this.websocket.onclose = function () {
@@ -715,11 +730,12 @@ function Messager() {
         msg.className="message";
         mobj["type"]==0?msg.classList.add("leftside"):msg.classList.add("rightside");
         box.appendChild(msg);
-        for(t in mobj["content"]){
+        var l=mobj["content"].length;
+        for(t=0;t<l;t++){
             var temp=mobj["content"][t];
             switch (temp["type"]) {
                 case "t": //文字
-                    msg.innerHTML+=temp["value"]+"<br>";
+                    msg.innerHTML+=temp["value"].replace("\n","<br>") +"<br>";
                     break;
                 case "tf"://文本文件
                     var ttemp=document.createElement("div");

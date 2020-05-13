@@ -10,6 +10,7 @@ from django.conf import settings
 #boxtype转文件名
 btdict={
     "chatbox":"chatbox.html",
+    "webpagebox":"webpagebox.html"
     #"webbox":"chatbox.html",
 }
 
@@ -22,8 +23,9 @@ def getBoxObj(request,boxtype,data):
     fn=btdict.get(boxtype,None)
     if fn:
         t=getBoxHTML(fn)
-        t.render(RequestContext(request,data))
-        boxobj["boxhtml"]=t.source
+        rc=RequestContext(request,data)
+        rhtml=t.render(RequestContext(request,{"data":data}))
+        boxobj["boxhtml"]=rhtml
     else:
         boxobj["boxhtml"]='<div class="innerbox animated"></div>'
     return boxobj
