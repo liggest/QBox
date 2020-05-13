@@ -11,13 +11,6 @@
         <link type="text/css" rel="stylesheet" href="static/css/index-extend.css" />
     </head>
     <body>
-        {% if request.user.is_authenticated %}
-            <h4><a href="#">{{ request.user.username }}</a></h4>
-            <h4><a href="accounts/logout/">退出</a></h4>
-        {% else %}
-            <h4><a href="accounts/login/">登录</a></h4>
-            <h4><a href="accounts/register/">注册</a></h4>
-        {% endif %}
         {% csrf_token %}
         <script src="static/js/jquery-3.4.1.min.js"></script>
         <script src="static/js/template.js"></script>

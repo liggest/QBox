@@ -4,4 +4,5 @@ def updateByDefault(boxtype,data):
         boxtype="webpagebox"
         data.setdefault("src","/accounts/login/")
         data.setdefault("boxName","登录框")
+        data.setdefault("size",(570,330))
     return boxtype,data

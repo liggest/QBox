@@ -8,7 +8,7 @@
 {% if request.user.is_authenticated %}
 {{name}}
 <div>
-    <h4><a href="#">{{ request.user.username }}</a></h4>
+    <h4>你好，{{ request.user.username }}</h4>
     <h4><a href="accounts/logout/">退出</a></h4>
 </div>
 {% else %}
