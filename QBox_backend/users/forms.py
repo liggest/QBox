@@ -31,8 +31,8 @@ class RegistrationForm(forms.Form):
         email = self.cleaned_data.get('email')
         if email_check(email):
             filter_result = User.objects.filter(email__exact=email)
-        if len(filter_result) > 0:
-            raise forms.ValidationError("邮箱已注册")
+            if len(filter_result) > 0:
+                raise forms.ValidationError("邮箱已注册")
         else:
             raise forms.ValidationError("请输入一个正确的邮箱")
         return email
