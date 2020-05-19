@@ -83,10 +83,10 @@ body{
     
     }
     .box.animated{
-        animation: opening 1.75s ease;
-        -webkit-animation: opening 1.75s ease;
-        -moz-animation: opening 1.75s ease;
-        -o-animation: opening 1.75s ease;
+        animation: opening 1.5s ease;
+        -webkit-animation: opening 1.5s ease;
+        -moz-animation: opening 1.5s ease;
+        -o-animation: opening 1.5s ease;
     }
     
     .box{
@@ -140,10 +140,10 @@ body{
     
     }
     .box.animated{
-        animation: opening-narrow 1.75s ease;
-        -webkit-animation: opening-narrow 1.75s ease;
-        -moz-animation: opening-narrow 1.75s ease;
-        -o-animation: opening-narrow 1.75s ease;
+        animation: opening-narrow 1.5s ease;
+        -webkit-animation: opening-narrow 1.5s ease;
+        -moz-animation: opening-narrow 1.5s ease;
+        -o-animation: opening-narrow 1.5s ease;
     }
     .box{
         width: 96%;
@@ -253,10 +253,10 @@ body{
 }
 
 .backbox.animated{
-    animation: opening-after 0.5s ease-in-out 1.75s backwards;
-    -webkit-animation: opening-after 0.5s ease-in-out 1.75s backwards;
-    -moz-animation: opening-after 0.5s ease-in-out 1.75s backwards;
-    -o-animation: opening-after 0.5s ease-in-out 1.75s backwards;
+    animation: opening-after 0.5s ease-in-out 1.5s backwards;
+    -webkit-animation: opening-after 0.5s ease-in-out 1.5s backwards;
+    -moz-animation: opening-after 0.5s ease-in-out 1.5s backwards;
+    -o-animation: opening-after 0.5s ease-in-out 1.5s backwards;
 }
 
 
@@ -287,10 +287,10 @@ body{
 }
 
 .innerbox.animated{
-    animation: opening-after 0.5s ease-in-out 1.75s backwards;
-    -webkit-animation: opening-after 0.5s ease-in-out 1.75s backwards;
-    -moz-animation: opening-after 0.5s ease-in-out 1.75s backwards;
-    -o-animation: opening-after 0.5s ease-in-out 1.75s backwards;
+    animation: opening-after 0.5s ease-in-out 1.5s backwards;
+    -webkit-animation: opening-after 0.5s ease-in-out 1.5s backwards;
+    -moz-animation: opening-after 0.5s ease-in-out 1.5s backwards;
+    -o-animation: opening-after 0.5s ease-in-out 1.5s backwards;
 }
 
 .title{/*标题*/

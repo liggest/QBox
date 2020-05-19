@@ -101,6 +101,7 @@ var dragger=new Dragger();
 
 //#region boxlist
 var boxLists=[];
+/*
 boxLists.findBoxByName=function (name) {
     var l=this.length;
     for(var i=0;i<l;i++){
@@ -141,7 +142,7 @@ boxLists.findBoxIdxByNum=function (num) {
 
 boxLists.removeAt=function (idx) {
     return this.slice(0,idx).concat(this.slice(idx+1));
-}
+}*/
 //#endregion
 
 //csrf问题

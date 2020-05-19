@@ -16,7 +16,7 @@ var getBoxNum =function(){
 function Box(name,content,boxobj) {
     //#region init
     this.boxNum=getBoxNum();
-    this.boxName=name;
+    this.boxName=name || "未命名框";
     this.content=content;
     this.boxObj=boxobj;
     this.frontcontent=this.content.firstElementChild.firstElementChild;
@@ -25,18 +25,18 @@ function Box(name,content,boxobj) {
     this.title=this.midcontent.firstElementChild;
     this.title.innerText=this.boxName;
     this.dragger=undefined;
-    this.boxList=[];
+    this.boxList=undefined;
     var box=this;
     this.init=function (container,boxLists,dragger) {
         boxLists.push(this);
         this.content.style.position="absolute";
         if(this.boxObj["position"]){
             var p=this.boxObj["position"];
-            this.setLeftTop(p[0],p[1]);
+            this.setPosition(p[0],p[1]);
         }
         if(this.boxObj["size"]){
             var size=this.boxObj["size"];
-            this.resize(size[0],size[1]);
+            this.setSize(size[0],size[1]);
         }
         container.prepend(this.content);
         this.dragger=dragger;
@@ -213,6 +213,7 @@ function Box(name,content,boxobj) {
         this.innercontent.addEventListener("dragover",this.onfileDrag);
         this.innercontent.addEventListener("drop",this.onfileDrop);
         this.nextBoxes=[];
+        /*
         this.nextBoxes.findBoxByName=function (name) {
             var l=this.length;
             for(var i=0;i<l;i++){
@@ -233,7 +234,7 @@ function Box(name,content,boxobj) {
         }
         this.nextBoxes.removeAt=function (idx) {
             return this.slice(0,idx).concat(this.slice(idx+1));
-        }
+        }*/
         this.prefix="";
         this.suffix="";
         this.analyze=function (text) {
@@ -284,7 +285,7 @@ function Box(name,content,boxobj) {
                 var nbi=box.nextBoxes.findBoxIdxByName(nbName);
                 if(nbi>=0){
                     mobj=messager.textobj("成功！",0);
-                    box.nextBoxes=box.nextBoxes.removeAt(nbi);
+                    box.nextBoxes.removeAt(nbi);
                     box.sendMsg(mobj);
                 }else{
                     mobj=messager.textobj("失败了…哪里出错了呢…",0);
@@ -483,19 +484,19 @@ function Box(name,content,boxobj) {
 
     //#endregion
     //#region resize
-    this.move=function (x,y) {
-        var [l,t]=this.getLeftTop();
+    this.movePosition=function (x,y) {
+        var [l,t]=this.getPosition();
         this.content.style.left=l+x+"px";
         this.content.style.top=t+y+"px";
     }
-    this.getLeftTop=function () {
+    this.getPosition=function () {
         var l=this.content.style.left;
         var t=this.content.style.top;
         l=l==""?0:Number(l.slice(0,-2));
         t=t==""?0:Number(t.slice(0,-2));
         return [l,t];
     }
-    this.setLeftTop=function(x,y){
+    this.setPosition=function(x,y){
         this.content.style.left=x+"px";
         this.content.style.top=y+"px";
     }
@@ -506,9 +507,21 @@ function Box(name,content,boxobj) {
         h=h.endsWith("px")?Number(h.slice(0,-2)):box.content.offsetHeight;
         return [w,h];
     }
-    this.resize=function (w,h) {
+    this.setSize=function (w,h) {
         this.content.style.width=w+"px";
         this.content.style.height=h+"px";
+    }
+    this.moveTo=function(x,y,time,ease){
+        $(this.content).animate({
+            left:x,
+            top:y
+        },time||600,ease||"easeOutCubic")
+    }
+    this.resizeTo=function(w,h,time,ease){
+        $(this.content).animate({
+            width:w,
+            height:h
+        },time||600,ease||"easeOutCubic")
     }
     this.resizeBegin=function () {
         //var offsetX=offsets[this.content.style.position]["moveOffsetX"];
@@ -683,7 +696,7 @@ function Box(name,content,boxobj) {
     //#region others
     this.selfDestroy=function () {
         var idx=this.boxList.findBoxIdxByName(this.boxName);
-        this.boxList=this.boxList.removeAt(idx);
+        this.boxList.removeAt(idx);
         if(this.resizeMode){
             this.resizeEnd();
         }
