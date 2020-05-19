@@ -16,17 +16,24 @@ var getBoxNum =function(){
 function Box(name,content,boxobj) {
     //#region init
     this.boxNum=getBoxNum();
-    this.boxName=name || "未命名框";
     this.content=content;
     this.boxObj=boxobj;
     this.frontcontent=this.content.firstElementChild.firstElementChild;
-    this.midcontent=this.content.getElementsByClassName("midbox")[0];
+    //this.midcontent=this.content.getElementsByClassName("midbox")[0];
+    this.midcontent=this.frontcontent.nextElementSibling;
     this.backcontent=this.content.firstElementChild.lastElementChild;
     this.title=this.midcontent.firstElementChild;
-    this.title.innerText=this.boxName;
+    this.backtitle=this.backcontent.firstElementChild;
     this.dragger=undefined;
     this.boxList=undefined;
     var box=this;
+    this.setName=function (name) {
+        name=String(name);
+        this.boxName=name;
+        this.title.innerText=name;
+        this.backtitle.innerText=name+"-设置";
+    }
+    this.setName(name||"未命名框");
     this.init=function (container,boxLists,dragger) {
         boxLists.push(this);
         this.content.style.position="absolute";
@@ -396,7 +403,7 @@ function Box(name,content,boxobj) {
                             function(data) {
                                 var boxobj=data;
                                 var nbName=boxobj["boxName"];
-                                new Box(nbName || "未命名框",boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
+                                new Box(nbName,boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
                             }
                         );
                     }
@@ -583,6 +590,9 @@ function Box(name,content,boxobj) {
 
         //this.resizeBox.parentNode.replaceChild(this.content,this.resizeBox);
 
+        //这里需要告诉后端已经缩放完了 后端
+        $.post();
+
         setTimeout(function () {
             box.frontcontent.classList.remove("down");
             box.midcontent.classList.remove("moreshadow");
@@ -596,8 +606,7 @@ function Box(name,content,boxobj) {
         var dragger=box.dragger;
         if(dragger.isOnDrag){
             var [w,h]=box.getSize();
-            box.content.style.width=w+dragger.deltaX+"px";
-            box.content.style.height=h+dragger.deltaY+"px";
+            box.setSize(w+dragger.deltaX,h+dragger.deltaY);
         }
     }
     this.resizeLeftDown=function (event) {
@@ -606,8 +615,7 @@ function Box(name,content,boxobj) {
             var [w,h]=box.getSize();
             var l=box.content.style.left;
             l=l==""?0:Number(l.slice(0,-2));
-            box.content.style.width=w-dragger.deltaX+"px";
-            box.content.style.height=h+dragger.deltaY+"px";
+            box.setSize(w-dragger.deltaX,h+dragger.deltaY);
             box.content.style.left=l+dragger.deltaX+"px";
         }
     }
@@ -619,8 +627,7 @@ function Box(name,content,boxobj) {
             var t=box.content.style.top;
             l=l==""?0:Number(l.slice(0,-2));
             t=t==""?0:Number(t.slice(0,-2));
-            box.content.style.width=w-dragger.deltaX+"px";
-            box.content.style.height=h-dragger.deltaY+"px";
+            box.setSize(w-dragger.deltaX,h-dragger.deltaY);
             box.content.style.left=l+dragger.deltaX+"px";
             box.content.style.top=t+dragger.deltaY+"px";
         }
@@ -631,8 +638,7 @@ function Box(name,content,boxobj) {
             var [w,h]=box.getSize();
             var t=box.content.style.top;
             t=t==""?0:Number(t.slice(0,-2));
-            box.content.style.width=w+dragger.deltaX+"px";
-            box.content.style.height=h-dragger.deltaY+"px";
+            box.setSize(w+dragger.deltaX,h-dragger.deltaY);
             box.content.style.top=t+dragger.deltaY+"px";
         }
     }
@@ -653,8 +659,8 @@ function Box(name,content,boxobj) {
             box.settingMode=true;
         }
     }
+    this.backtitle.addEventListener("dblclick",this.dbClick);
     this.midcontent.addEventListener("dblclick",this.dbClick);
-    this.backcontent.addEventListener("dblclick",this.dbClick);
     //#endregion
     //#region longpress-resizeMode
     this.pressed=false;
@@ -681,9 +687,13 @@ function Box(name,content,boxobj) {
             this.resizeBegin();
         }
     }
+    this.backtitle.addEventListener("mousedown",this.onPressBegin);
+    this.backtitle.addEventListener("mouseup",this.onDePress);
+    this.backtitle.addEventListener("mouseout",this.onDePress);
     this.content.addEventListener("mousedown",this.onPressBegin);
     this.content.addEventListener("mouseup",this.onDePress);
     this.content.addEventListener("mouseout",this.onDePress);
+
     this.frontClose=function () {
         if(box.resizeMode){
             box.resizeEnd();
@@ -695,7 +705,7 @@ function Box(name,content,boxobj) {
 
     //#region others
     this.selfDestroy=function () {
-        var idx=this.boxList.findBoxIdxByName(this.boxName);
+        var idx=this.boxList.findBoxIdxByNum(this.boxNum);
         this.boxList.removeAt(idx);
         if(this.resizeMode){
             this.resizeEnd();

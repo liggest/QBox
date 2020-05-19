@@ -12,7 +12,10 @@ function getBoxTemplate() {
         <div class="midbox">\
             <div class="title" >新的框</div>\
         </div>\
-        <div class="backbox">这里是设置</div>\
+        <div class="backbox">\
+            <div class="title" >新的框-设置</div>\
+            这里是设置\
+        </div>\
     </div>';
     rboxtemp.innerHTML=boxTemplateHTML;
     rboxtemp.style.position="absolute";

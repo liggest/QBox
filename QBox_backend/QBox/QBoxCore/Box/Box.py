@@ -26,3 +26,7 @@ class Box():
         except:
             return None
 
+    def update(self,**kw):
+        for k in kw.keys():
+            setattr(self,k,kw[k])
+

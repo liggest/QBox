@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse,JsonResponse
+from django.http import HttpResponse,JsonResponse,HttpResponseNotModified,HttpResponseNotAllowed
 from QBox_backend.settings import BASE_DIR
 from django.views.decorators.csrf import csrf_exempt
 import os
@@ -17,7 +17,7 @@ qbcore=core.core()
 def MainPage(request):
     if request.method=="GET":
         return render(request,"index_clear.html")
-    return HttpResponse("这里什么都没有")
+    return HttpResponse("这里什么都没有",status=405)
 
 def boxInit(request):
     if request.method=="GET":
@@ -27,13 +27,14 @@ def boxInit(request):
         uid=util.getUserKey(request)
         user=qbcore.createUser(uid)
         user.screenSize=(width,height)
-        boxobj=util.getBoxObj(request,"chatbox",{})
-        size=[int(width*0.625),int(height*0.625)]
-        boxobj["size"]=size
-        boxobj["position"]=[int(width/2-size[0]/2),int(height*0.02)]
         print("初始化用户",uid)
-        return JsonResponse(boxobj)
-    return JsonResponse({})
+        request.GET["boxtype"]="chatbox"
+        data={}
+        data["size"]=[int(width*0.625),int(height*0.625)]
+        data["position"]=[int(width/2-size[0]/2),int(height*0.02)]
+        request.GET["data"]=data
+        return getInnerBox(request)
+    return JsonResponse({},status=405)
     
 
 def getInnerBox(request):
@@ -48,7 +49,7 @@ def getInnerBox(request):
             boxobj["position"]=data.get("position",(20,20))
             #boxobj["size"]=[320,500]
             return JsonResponse(boxobj)
-    return JsonResponse({})
+    return JsonResponse({},status=405)
 
 @csrf_exempt
 def userExit(request):
@@ -58,7 +59,7 @@ def userExit(request):
             pass
         qbcore.deleteUser(request)
         print("处理",util.getUserKey(request),"的后事")
-    return HttpResponse("")
+    return HttpResponse("",status=405)
 
 #@csrf_exempt
 def registerBox(request):
@@ -68,7 +69,27 @@ def registerBox(request):
             print("注册了框",nb.name)
             #print(qbcore.getUser(request).boxes)
             return HttpResponse("添加了框~")
-    return HttpResponse("并没有做什么")
+    return HttpResponse("并没有做什么",status=405)
+
+def updateBox(request,bid):
+    if request.method=="POST":
+        #bid=data["id"]
+        box=qbcore.getUser(request).getBox(bid)
+        if not box:
+            return HttpResponse("并没有做什么")
+        data = request.POST.get("data",None)
+        if not boxdata.checkData(data,data.keys()):
+            return HttpResponse("并没有做什么")
+        box.update(data)
+        return HttpResponse("更新了框")
+    return HttpResponse("并没有做什么",status=405)
+        
+def removeBox(request,bid):
+    if request.method=="POST":
+        if qbcore.getUser(request).deleteBox(bid):
+            return HttpResponse("删除了框")
+    return HttpResponse("并没有做什么",status=405)
+
 
 '''
 def getWebSocket(request,bid):
