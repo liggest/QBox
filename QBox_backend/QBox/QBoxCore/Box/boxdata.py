@@ -92,7 +92,7 @@ def getNewBoxPosition(user,newboxesize):
         tempx = box.position[0] + box.size[0]
         tempy = box.position[1] + box.size[1]
         exist.append([box.position[0],tempx,box.position[1],tempy])
-        print(exist[-1])
+    print(exist[-1])
     #for i in range(len(boxposition)):
     #    tempx = boxposition[i][0] + boxsize[i][0]
     #    tempy = boxposition[i][1] + boxsize[i][1]
