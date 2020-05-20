@@ -9,9 +9,14 @@ class Box():
     def __init__(self):
         self.id=0
         self.name=""
-        self.type=""
+        self.boxtype=""
         self.size=[0,0]
         self.position=[0,0]
+
+    def __str__(self):
+        return "No.%d %s->%s"%(self.id,self.boxtype,self.name)
+
+    __repr__=__str__
 
     @staticmethod
     def getBoxFromRequestData(rdata):

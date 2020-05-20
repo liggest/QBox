@@ -1,5 +1,6 @@
 from types import FunctionType
 from ..core.util import btdict
+import json
 
 
 def updateByDefault(boxtype,data):
@@ -7,7 +8,7 @@ def updateByDefault(boxtype,data):
         boxtype="webpagebox"
         data.setdefault("src","/accounts/login/")
         data.setdefault("boxName","登录框")
-        data.setdefault("size",(570/2,330))
+        data.setdefault("size",(285,330))
     return boxtype,data
 
 def isInt(ckdata):

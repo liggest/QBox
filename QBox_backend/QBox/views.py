@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 import os
 import hmac
 from datetime import datetime
+import json
 
 from .QBoxCore.Box import Box,boxdata
 from .QBoxCore.core import core,util
@@ -19,7 +20,7 @@ def MainPage(request):
         return render(request,"index_clear.html")
     return HttpResponse("这里什么都没有",status=405)
 
-def boxInit(request):
+def userInit(request):
     if request.method=="GET":
         width=int(request.GET.get("width",1920) )
         height=int(request.GET.get("height",1080) )
@@ -31,9 +32,10 @@ def boxInit(request):
         getdata=request.GET.copy()
         getdata["boxtype"]="chatbox"
         data={}
-        data["size"]=[int(width*0.625),int(height*0.625)]
-        data["position"]=[int(width/2-data["size"][0]/2),int(height*0.02)]
-        getdata["data"]=data
+        size=[int(width*0.625),int(height*0.625)]
+        data["size"]=size
+        data["position"]=[int(width/2-size[0]/2),int(height*0.02)]
+        getdata["data"]=json.dumps(data)
         request.GET=getdata
         return getInnerBox(request)
     return JsonResponse({},status=405)
@@ -42,13 +44,13 @@ def boxInit(request):
 def getInnerBox(request):
     if request.method=="GET":
         bt = request.GET.get("boxtype",None)
-        data = request.GET.get("data",{})
+        data = json.loads( request.GET.get("data",'{}') )
         if bt:
             bt,data=boxdata.updateByDefault(bt,data)
             boxobj=util.getBoxObj(request,bt,data)
             boxobj["boxName"]=data.get("boxName",None)
-            boxobj["size"]=data.get("size",(200,200))
-            boxobj["position"]=data.get("position",(20,20))
+            boxobj["size"]=data.get("size",(200, 200))
+            boxobj["position"]=data.get("position",(20, 20)) 
             #boxobj["size"]=[320,500]
             return JsonResponse(boxobj)
     return JsonResponse({},status=405)
@@ -61,37 +63,54 @@ def userExit(request):
             pass
         qbcore.deleteUser(request)
         print("处理",util.getUserKey(request),"的后事")
-    return HttpResponse("",status=405)
+    return HttpResponse("")
 
 #@csrf_exempt
 def registerBox(request):
     if request.method=="POST":
-        nb=Box.Box.getBoxFromRequestData(request.POST)
-        if qbcore.getUser(request).addBox(nb):
-            print("注册了框",nb.name)
-            #print(qbcore.getUser(request).boxes)
-            return HttpResponse("添加了框~")
-    return HttpResponse("并没有做什么",status=405)
+        data = request.POST.get("data",None)
+        if data:
+            nb=Box.Box.getBoxFromRequestData(json.loads(data))
+            if qbcore.getUser(request).addBox(nb):
+                print("注册了框",nb.name)
+                #print(qbcore.getUser(request).boxes)
+                return HttpResponse("添加了框~")
+    return HttpResponse("并没有添加什么",status=405)
 
 def updateBox(request,bid):
     if request.method=="POST":
         #bid=data["id"]
         box=qbcore.getUser(request).getBox(bid)
         if not box:
-            return HttpResponse("并没有做什么")
+            return HttpResponse("并没有更新什么")
         data = request.POST.get("data",None)
-        if not boxdata.checkData(data,data.keys()):
-            return HttpResponse("并没有做什么")
-        box.update(data)
-        return HttpResponse("更新了框")
-    return HttpResponse("并没有做什么",status=405)
+        if data:
+            data=json.loads(data)
+            if not boxdata.checkData(data,data.keys()):
+                print("no check")
+                return HttpResponse("并没有更新什么")
+            box.update(**data)
+            return HttpResponse("更新了框~")
+    return HttpResponse("并没有更新什么",status=405)
         
 def removeBox(request,bid):
     if request.method=="POST":
         if qbcore.getUser(request).deleteBox(bid):
-            return HttpResponse("删除了框")
-    return HttpResponse("并没有做什么",status=405)
+            return HttpResponse("移除了框~")
+    return HttpResponse("并没有移除什么",status=405)
 
+def getStatus(request):
+    if request.method=="GET":
+        users=request.GET.getlist("user",None)
+        if users:
+            rl=[]
+            for uid in users:
+                us=qbcore.getUserFromID(uid)
+                if us:
+                    rl.append(str(us))
+            return HttpResponse("\n".join(rl))            
+        return HttpResponse(str(qbcore))
+    return HttpResponse("",status=405)
 
 '''
 def getWebSocket(request,bid):

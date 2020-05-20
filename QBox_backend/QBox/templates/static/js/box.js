@@ -367,11 +367,12 @@ function Box(name,content,boxobj) {
             this.nextBoxes.splice(0,this.nextBoxes.length);
         }
         //#endregion
-        //#region webconnection
+        //#region websocket
         this.websocket=undefined;
         this.wsConnect=function () {
             var wsurl = location.host+"/box/ws/"+ this.boxNum +"/";
             try{
+                this.wsReconnectLock=false;
                 this.websocket = new WebSocket("ws://"+wsurl);
                 this.wsEvents();
             }catch(e){
@@ -458,6 +459,10 @@ function Box(name,content,boxobj) {
         this.wsHeartBeatReset=function () {
             this.websocket.last=new Date().getTime();
         }
+        this.wsDisconnect=function () {
+            this.wsReconnectLock=true;
+            this.websocket.close();
+        }
         var oldBackendinit=this.backendinit;
         this.backendinit=function () {
             var xhr=oldBackendinit();
@@ -467,15 +472,25 @@ function Box(name,content,boxobj) {
             });
         }
         //#endregion
+        //#region others
+        var oldSelfDestroy=this.selfDestroy;
+        this.selfDestroy=function () {
+            this.wsDisconnect();
+            oldSelfDestroy();
+        }
+        //#endregion
     }
 
     this.backendinit=function(){
-        var xhr=$.post("/box/register/",{
+        jdata={
             id:box.boxNum,
             name:box.boxName,
             boxtype:box.boxObj["boxtype"],
             size:box.boxObj["size"],
             position:box.boxObj["position"]
+        }
+        var xhr=$.post("/box/register/",{
+            data:JSON.stringify(jdata)
         }).done(function(data) {
             console.log(data);
         });
@@ -488,6 +503,12 @@ function Box(name,content,boxobj) {
         this.backendinit();
     }
     this.getInnerBox(boxobj);
+
+    this.backendUpdate=function (data) {
+        $.post("/box/update/"+ this.boxNum +"/",{data:JSON.stringify(data)} ).done(function (data) {
+            console.log(data);
+        })
+    }
 
     //#endregion
     //#region resize
@@ -590,8 +611,9 @@ function Box(name,content,boxobj) {
 
         //this.resizeBox.parentNode.replaceChild(this.content,this.resizeBox);
 
-        //这里需要告诉后端已经缩放完了 后端
-        $.post();
+        //这里需要告诉后端已经缩放完了
+        this.backendUpdate({size:this.getSize(),position:this.getPosition()})
+        
 
         setTimeout(function () {
             box.frontcontent.classList.remove("down");
@@ -710,7 +732,10 @@ function Box(name,content,boxobj) {
         if(this.resizeMode){
             this.resizeEnd();
         }
-        this.content.classList.add("transparent");
+        this.content.firstElementChild.classList.add("transparent");
+        $.post("/box/remove/"+ this.boxNum +"/",{}).done(function (data) {
+            console.log(data);
+        })
         setTimeout(function () {
             box.content.parentElement.removeChild(box.content)
         },1200);

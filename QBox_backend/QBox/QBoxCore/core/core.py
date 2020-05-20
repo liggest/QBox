@@ -6,8 +6,15 @@ class core():
     def __init__(self):
         self.qusers={}
 
+    def __str__(self):
+        return "\n".join( map(str,self.qusers.values()) )
+
+    __repr__=__str__
+
     def createUser(self,uid):
-        self.qusers[uid]=quser.quser()
+        qu=quser.quser()
+        qu.uid=uid
+        self.qusers[uid]=qu
         return self.qusers[uid]
         
     def deleteUser(self,request):

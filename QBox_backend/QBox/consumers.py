@@ -16,7 +16,8 @@ class WsConsumer(AsyncJsonWebsocketConsumer):
         if wsbox:
             if hasattr(wsbox,"websocket"):
                 await wsbox.websocket.close(code=9999) #自定义的code 代表被挤下去了
-            setattr(wsbox,"websocket",self)
+            wsbox.update(**{"websocket":self})
+            #setattr(wsbox,"websocket",self)
             self.box=wsbox
             print("与",uid,"的",wsbox.name,"框连接了")
             await self.accept() #接受连接
@@ -38,16 +39,17 @@ class WsConsumer(AsyncJsonWebsocketConsumer):
             if mobj["type"]==1:
                 mobj["type"]=0
                 await self.send_json(content)
-            elif mobj["type"]==0:
                 first=mobj["content"][0]
                 if first["type"]=="t":
                     if first["value"]=="登录":
                         await self.send_json(messager.getWsMessage("login","cmd"))
+                
                         
-        elif content["wsMsgType"]=="heartbeat":
+        elif content["wsMsgType"]=="heartbeat": #心跳
             content["wsMsg"]="下"
-            print("收到了来自",self.box.name,"的心跳")
+            #print("收到了来自",self.box.name,"的心跳")
             await self.send_json(content)
+
         elif content["wsMsgType"]=="cmd":
             pass #收到了指令
 

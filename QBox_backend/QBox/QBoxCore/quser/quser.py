@@ -2,8 +2,14 @@
 class quser():
 
     def __init__(self):
+        self.uid=""
         self.screenSize=(0,0)
         self.boxes={}
+
+    def __str__(self):
+        return "用户："+self.uid+"\n  "+"\n  ".join(map(str,self.boxes.values()) )
+    
+    __repr__=__str__
 
     def addBox(self,box):
         if box:
