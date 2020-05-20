@@ -7,6 +7,8 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.clickjacking import xframe_options_sameorigin
+from QBox.views import qbcore
+from QBox.QBoxCore.core import util
 
 @xframe_options_sameorigin
 def register(request):
@@ -37,7 +39,9 @@ def login(request):
             password = form.cleaned_data['password']
             user = auth.authenticate(username=username, password=password)
         if user is not None and user.is_active:
+            uid=util.getUserKey(request)
             auth.login(request, user)
+            qbcore.transferUser(uid,request)
             #return HttpResponseRedirect("/")
             return render(request, 'login.html', {'form': None})
         else:
@@ -51,7 +55,9 @@ def login(request):
 @xframe_options_sameorigin
 @login_required
 def logout(request):
+    uid=util.getUserKey(request)
     auth.logout(request)
+    qbcore.transferUser(uid,request)
     form = LoginForm()
     return render(request, 'login.html', {'form': form})
     #return HttpResponseRedirect("/")

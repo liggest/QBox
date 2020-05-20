@@ -86,6 +86,7 @@ def checkDataByFunc(ckdata,cf):
 '''
 def getNewBoxPosition(user,newboxesize):
     #screensize,boxposition,boxsize
+    print(user.screenSize)
     screensize=user.screenSize
     exist = []
     for box in user.boxes.values():

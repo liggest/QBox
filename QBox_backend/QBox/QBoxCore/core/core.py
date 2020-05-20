@@ -35,4 +35,19 @@ class core():
     
     def getUserFromID(self,uid):
         return self.qusers.get(uid,None)
+
+    def transferUser(self,uid,request):
+        user=self.getUserFromID(uid)
+        if not user:
+            return False
+        newid=util.getUserKey(request)
+        if self.getUserFromID(newid):
+            del self.qusers[newid]
+        self.qusers[newid]=user
+        user.uid=newid
+        del self.qusers[uid]
+        return True
+
+
+
         
