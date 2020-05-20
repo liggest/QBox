@@ -83,17 +83,26 @@ def checkDataByFunc(ckdata,cf):
 这里想的是新生成的框可以超出屏幕
 如果固定了新框的大小，极有可能无法在屏幕里出现的状况
 这里的位置是框的左上角
- def GetNewBoxPosition(screensize,boxposition,boxsize,newboxesize):
+'''
+def getNewBoxPosition(user,newboxesize):
+    #screensize,boxposition,boxsize
+    screensize=user.screenSize
     exist = []
-    for i in range(len(boxposition)):
-        tempx = boxposition[i][0] + boxsize[i][0]
-        tempy = boxposition[i][1] + boxsize[i][1]
-        exist.append([boxposition[i][0],tempx,boxposition[i][1],tempy])
+    for box in user.boxes.values():
+        tempx = box.position[0] + box.size[0]
+        tempy = box.position[1] + box.size[1]
+        exist.append([box.position[0],tempx,box.position[1],tempy])
+        print(exist[-1])
+    #for i in range(len(boxposition)):
+    #    tempx = boxposition[i][0] + boxsize[i][0]
+    #    tempy = boxposition[i][1] + boxsize[i][1]
+    #    exist.append([boxposition[i][0],tempx,boxposition[i][1],tempy])
     sw = screensize[0]
     sh = screensize[1]
 
     temp = []
-    for i in range(len(boxposition)):
+    #for i in range(len(boxposition)):
+    for i in range(len(exist)):
         countx = 0
         county = 0
         while countx < sw and county < sh:
@@ -154,4 +163,3 @@ def checkDataByFunc(ckdata,cf):
             y = temp[i][1]  
     #print(temp)
     return x,y
-'''    

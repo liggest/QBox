@@ -50,7 +50,16 @@ def getInnerBox(request):
             boxobj=util.getBoxObj(request,bt,data)
             boxobj["boxName"]=data.get("boxName",None)
             boxobj["size"]=data.get("size",(200, 200))
-            boxobj["position"]=data.get("position",(20, 20)) 
+            position=data.get("position",None)
+            if not position:
+                (px,py)=boxdata.getNewBoxPosition(qbcore.getUser(request),boxobj["size"])
+                if px==-1:
+                    px=20
+                if py==-1:
+                    py=20
+                position=(px,py)
+            print("position:",position)
+            boxobj["position"]=position
             #boxobj["size"]=[320,500]
             return JsonResponse(boxobj)
     return JsonResponse({},status=405)
