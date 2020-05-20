@@ -475,8 +475,9 @@ function Box(name,content,boxobj) {
         //#region others
         var oldSelfDestroy=this.selfDestroy;
         this.selfDestroy=function () {
+            console.log("自爆");
             this.wsDisconnect();
-            oldSelfDestroy();
+            oldSelfDestroy.apply(this)
         }
         //#endregion
     }
@@ -496,13 +497,12 @@ function Box(name,content,boxobj) {
         });
         return xhr;
     }
-
     this.getInnerBox=function(boxobj){
         this.midcontent.innerHTML+=boxobj["boxhtml"];
         this.initByBoxData(boxobj);
         this.backendinit();
     }
-    this.getInnerBox(boxobj);
+    //#####
 
     this.backendUpdate=function (data) {
         $.post("/box/update/"+ this.boxNum +"/",{data:JSON.stringify(data)} ).done(function (data) {
@@ -741,6 +741,7 @@ function Box(name,content,boxobj) {
         },1200);
     }
     //#endregion
+    this.getInnerBox(boxobj); //类创建的最后，按boxobj开始加载
 }
 
 /*
