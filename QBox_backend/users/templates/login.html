@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="/">
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link type="text/css" rel="stylesheet" href="static/css/style.css" />
+</head>
+<body>
+{% if request.user.is_authenticated %}
+{{name}}
+<div>
+    <h4>你好，{{ request.user.username }}</h4>
+    <h4><a href="accounts/logout/">退出</a></h4>
+</div>
+{% else %}
+<h4 style="text-align: center">登录</h4>
+<!--消息框架-->
+{% if message %}
+{{ message }}
+{% endif %}
+<form method="post" action="" enctype="multipart/form-data">
+    <div class="testcontainer">
+        {% csrf_token %}
+        {{form}}
+    </div>
+     <div class="loginbutton">
+        <input type="submit" value="登录" />
+     </div>
+</form>
+<div class="loginbutton">
+<a href="/accounts/register">注册</a>
+</div>
+{% endif %}
+</body>
+</html>

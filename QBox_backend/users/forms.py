@@ -10,11 +10,11 @@ def email_check(email):
 
 #用户注册表
 class RegistrationForm(forms.Form):
-    username = forms.CharField(label='用户名', max_length=50)
+    username = forms.CharField(label='用户名', max_length=50, widget=forms.TextInput(attrs={'class':'testloginstyle'}))
     #nicheng = forms.CharField(label='昵称')
-    email = forms.EmailField(label='邮箱',)
-    password1 = forms.CharField(label='输入密码', widget=forms.PasswordInput)
-    password2 = forms.CharField(label='确认密码', widget=forms.PasswordInput)
+    email = forms.EmailField(label='邮箱', widget=forms.TextInput(attrs={'class':'testloginstyle'}))
+    password1 = forms.CharField(label='输入密码', widget=forms.PasswordInput(attrs={'class':'testloginstyle'}))
+    password2 = forms.CharField(label='确认密码', widget=forms.PasswordInput(attrs={'class':'testloginstyle'}))
 
 
 #判断用户名是否唯一
@@ -57,8 +57,9 @@ class RegistrationForm(forms.Form):
 
 #登录用户表
 class LoginForm(forms.Form):
-    username = forms.CharField(label='用户名', max_length=50)
-    password = forms.CharField(label='密码', widget=forms.PasswordInput)
+    #username = forms.CharField(label='用户名', max_length=50)
+    username = forms.CharField(label='用户名', max_length=50, widget=forms.TextInput(attrs={'class':'testloginstyle'}))
+    password = forms.CharField(label='密码', widget=forms.PasswordInput(attrs={'class':'testloginstyle'}))
 
 #判断用户名是否存在
     def clean_username(self):

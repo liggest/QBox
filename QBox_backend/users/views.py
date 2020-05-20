@@ -26,7 +26,7 @@ def register(request):
     else:
         form = RegistrationForm()
 
-    return render(request, 'users/registration.html', {'form': form})
+    return render(request, 'registration.html', {'form': form})
 
 @xframe_options_sameorigin
 def login(request):
@@ -39,12 +39,12 @@ def login(request):
         if user is not None and user.is_active:
             auth.login(request, user)
             #return HttpResponseRedirect("/")
-            return render(request, 'users/login.html', {'form': None})
+            return render(request, 'login.html', {'form': None})
         else:
-            return render(request, 'users/login.html', {'form': form, 'message': '密码错误，请重试'})
+            return render(request, 'login.html', {'form': form, 'message': '密码错误，请重试'})
     else:
         form = LoginForm()
-    return render(request, 'users/login.html', {'form': form})
+    return render(request, 'login.html', {'form': form})
 
 
 
@@ -53,5 +53,5 @@ def login(request):
 def logout(request):
     auth.logout(request)
     form = LoginForm()
-    return render(request, 'users/login.html', {'form': form})
+    return render(request, 'login.html', {'form': form})
     #return HttpResponseRedirect("/")
