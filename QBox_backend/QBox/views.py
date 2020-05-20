@@ -28,11 +28,13 @@ def boxInit(request):
         user=qbcore.createUser(uid)
         user.screenSize=(width,height)
         print("初始化用户",uid)
-        request.GET["boxtype"]="chatbox"
+        getdata=request.GET.copy()
+        getdata["boxtype"]="chatbox"
         data={}
         data["size"]=[int(width*0.625),int(height*0.625)]
-        data["position"]=[int(width/2-size[0]/2),int(height*0.02)]
-        request.GET["data"]=data
+        data["position"]=[int(width/2-data["size"][0]/2),int(height*0.02)]
+        getdata["data"]=data
+        request.GET=getdata
         return getInnerBox(request)
     return JsonResponse({},status=405)
     
