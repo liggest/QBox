@@ -3,13 +3,15 @@ from django.http import HttpResponse,JsonResponse,HttpResponseNotModified,HttpRe
 from QBox_backend.settings import BASE_DIR
 from django.views.decorators.csrf import csrf_exempt
 import os
-import hmac
-from datetime import datetime
+#import hmac
+#from datetime import datetime
 import json
+from asgiref.sync import async_to_sync
 
 from .QBoxCore.Box import Box,boxdata
 from .QBoxCore.core import core,util
 from .QBoxCore.quser import quser
+from .QBoxCore.message import messager
 
 qbcore=core.core()
 
@@ -120,6 +122,15 @@ def getStatus(request):
             return HttpResponse("\n".join(rl))            
         return HttpResponse(str(qbcore))
     return HttpResponse("",status=405)
+
+def test(request):
+    cbox=qbcore.getUser(request).getChatBox(checkws=True)
+    if cbox:
+        mobj=messager.getMsg( messager.getTextContent("测试") )
+        async_to_sync( cbox.websocket.send_json )(messager.getWsMessage(mobj))
+        return HttpResponse("test")
+    else:
+        return HttpResponse("没法test")
 
 '''
 def getWebSocket(request,bid):

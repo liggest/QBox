@@ -33,7 +33,7 @@ function Box(name,content,boxobj) {
         this.title.innerText=name;
         this.backtitle.innerText=name+"-设置";
     }
-    this.setName(name||"未命名框");
+    this.setName(name||boxobj["boxName"]||"未命名框");
     this.init=function (container,boxLists,dragger) {
         boxLists.push(this);
         this.content.style.position="absolute";
@@ -176,11 +176,12 @@ function Box(name,content,boxobj) {
                 return;
             }
             mobj["type"]=1;
+            if(mobj["content"][0]["type"]=="t"){
+                mobj["content"][0]["value"]=messager.addPS(mobj["content"][0]["value"],this.prefix,this.suffix);
+            }
             this.sendMsg(mobj);
-            var firstM=mobj["content"][0];
-            if(firstM["type"]=="t"){
-                var raw=firstM["value"];
-                var result=messager.addPS(raw,this.prefix,this.suffix);
+            if(mobj["content"][0]["type"]=="t"){
+                var result=mobj["content"][0]["value"];
                 this.analyze(result);
             }
         }
@@ -266,7 +267,7 @@ function Box(name,content,boxobj) {
             }else if(text.startsWith("新建")){
                 var nbName=text.substring(2).trim();
                 if(nbName!=""){
-                    $.get("/box/templates",{boxtype:"chatbox",data:{}}).done(
+                    $.get("/box/templates",{boxtype:"chatbox",data:JSON.stringify({}) }).done(
                         function(data) {
                             var boxobj=data
                             new Box(nbName,boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
@@ -389,7 +390,7 @@ function Box(name,content,boxobj) {
             this.websocket.onmessage = function (evt) {
                 var received = JSON.parse(evt.data);
                 if (received["wsMsgType"]=="heartbeat"){
-                    console.log(box.boxName+" 收到了心跳");
+                    //console.log(box.boxName+" 收到了心跳");
                     box.wsHeartBeatReset();
                 }else if(received["wsMsgType"]=="msg"){
                     box.sendMsg(received["wsMsg"]);
@@ -400,7 +401,7 @@ function Box(name,content,boxobj) {
                     //收到指令，备用
                     console.log(box.boxName+" 收到指令："+received["wsMsg"]);
                     if(received["wsMsg"]=="login"){
-                        $.get("/box/templates",{boxtype:"login",data:{}}).done(
+                        $.get("/box/templates",{boxtype:"login", data:JSON.stringify({}) }).done(
                             function(data) {
                                 var boxobj=data;
                                 var nbName=boxobj["boxName"];
@@ -451,7 +452,7 @@ function Box(name,content,boxobj) {
                     if (box.websocket.bufferedAmount == 0 && box.websocket.readyState == 1) {
                         var wsmsg=messager.getWsMsg("heartbeat","上");
                         box.websocket.send(JSON.stringify(wsmsg));
-                        console.log(box.boxName+" 发送了心跳");
+                        //console.log(box.boxName+" 发送了心跳");
                     }
                 }
             },30000);
@@ -502,14 +503,30 @@ function Box(name,content,boxobj) {
         this.initByBoxData(boxobj);
         this.backendinit();
     }
-    //#####
 
+    //#endregion
+    //#region update
     this.backendUpdate=function (data) {
         $.post("/box/update/"+ this.boxNum +"/",{data:JSON.stringify(data)} ).done(function (data) {
             console.log(data);
         })
     }
-
+    this.boxObjUpdate=function(data){
+        this.boxObj["position"]=this.getPosition()
+        this.boxObj["size"]=this.getSize()
+        this.boxObj["boxName"]=this.boxName
+        //this.boxObj["bid"]=this.boxNum
+        var bhtml="";
+        childrens=this.midcontent.children;
+        cl=childrens.length;
+        for(var i=1;i<cl;i++){
+            bhtml+=childrens[i].innerHTML;
+        }
+        this.boxObj["boxhtml"]=bhtml;
+        if(data){
+            this.boxObj["data"]=data
+        }
+    }
     //#endregion
     //#region resize
     this.movePosition=function (x,y) {
@@ -766,164 +783,319 @@ function Rect(left,top,width,height) {
 
 
 function Messager() {
-    this.mobj2JSON=function (mobj) {
-        return JSON.stringify(mobj);
-    }
-    this.JSON2mobj=function (mjson) {
-        return JSON.parse(mjson);
-    }
-    this.mobj2HTML=function (mobj,maxWidth) {
-        var box=document.createElement("div");
-        box.className="messagebox";
-        var msg=document.createElement("div");
-        msg.className="message";
-        mobj["type"]==0?msg.classList.add("leftside"):msg.classList.add("rightside");
-        box.appendChild(msg);
-        var l=mobj["content"].length;
-        for(t=0;t<l;t++){
-            var temp=mobj["content"][t];
-            switch (temp["type"]) {
-                case "t": //文字
-                    msg.innerHTML+=temp["value"].replace("\n","<br>") +"<br>";
-                    break;
-                case "tf"://文本文件
-                    var ttemp=document.createElement("div");
-                    ttemp.className="textfile";
-                    var reader = new FileReader();
-                    var file=temp["file"];
-                    reader.readAsText(file,"gb2312");
-                    reader.onload=function () {
-                        ttemp.innerText=reader.result;
-                    }
-                    msg.appendChild(ttemp);
-                    break;
-                case "img": //图片
-                    var itemp=document.createElement("img");
-                    /*
-                    itemp.onload=function () {
-                        var w=itemp.width;
-                        var h=itemp.height;
-                        if(w>maxWidth){
-                            itemp.width=maxWidth;
-                            itemp.height=h*maxWidth/w;
-                        }else{
-                            itemp.width=w;
-                            itemp.height=h;
-                        }
-                    }*/
-                    itemp.src=temp["value"];
-                    msg.appendChild(itemp);
-                    break;
-                case "video":
-                    var vtemp=document.createElement("video");
-                    var stemp=document.createElement("source");
-                    var atemp=document.createElement("a");
-                    vtemp.controls="controls";
-                    stemp.src=temp["value"];
-                    stemp.type=temp["vtype"];
-                    vtemp.appendChild(stemp);
-                    atemp.href=temp["value"];
-                    atemp.target="_blank";
-                    atemp.innerHTML="啊呀，视频格式不支持>_<";
-                    vtemp.appendChild(atemp);
-                    msg.appendChild(vtemp);
-                    break;
-                case "audio":
-                    var atemp;
-                    if(temp["atype"]=="audio/mid"){
-                        atemp=document.createElement("embed");
-                        atemp.src=temp["value"];
-                        atemp.width=20;
-                        atemp.height=20;
-                        msg.appendChild(atemp);
+
+}
+Messager.prototype.mobj2JSON=function (mobj) {
+    return JSON.stringify(mobj);
+}
+Messager.prototype.JSON2mobj=function (mjson) {
+    return JSON.parse(mjson);
+}
+Messager.prototype.mobj2HTML=function (mobj,maxWidth) {
+    var box=document.createElement("div");
+    box.className="messagebox";
+    var msg=document.createElement("div");
+    msg.className="message";
+    mobj["type"]==0?msg.classList.add("leftside"):msg.classList.add("rightside");
+    box.appendChild(msg);
+    var l=mobj["content"].length;
+    for(t=0;t<l;t++){
+        var temp=mobj["content"][t];
+        switch (temp["type"]) {
+            case "t": //文字
+                msg.innerHTML+=temp["value"].replace("\n","<br>") +"<br>";
+                break;
+            case "tf"://文本文件
+                var ttemp=document.createElement("div");
+                ttemp.className="textfile";
+                var reader = new FileReader();
+                var file=temp["file"];
+                reader.readAsText(file,"gb2312");
+                reader.onload=function () {
+                    ttemp.innerText=reader.result;
+                }
+                msg.appendChild(ttemp);
+                break;
+            case "img": //图片
+                var itemp=document.createElement("img");
+                /*
+                itemp.onload=function () {
+                    var w=itemp.width;
+                    var h=itemp.height;
+                    if(w>maxWidth){
+                        itemp.width=maxWidth;
+                        itemp.height=h*maxWidth/w;
                     }else{
-                        atemp=document.createElement("audio");
-                        atemp.controls="controls";
-                        var stemp=document.createElement("source");
-                        var ltemp=document.createElement("a");
-                        stemp.src=temp["value"];
-                        stemp.type=temp["atype"];
-                        atemp.appendChild(stemp);
-                        ltemp.href=temp["value"];
-                        ltemp.target="_blank";
-                        ltemp.innerHTML="啊呀，音频格式不支持>_<";
-                        atemp.appendChild(ltemp);
-                        msg.appendChild(atemp);
+                        itemp.width=w;
+                        itemp.height=h;
                     }
-                    break;
-                case "link":
-                    var ltemp=document.createElement("div");
-                    ltemp.className="linker";
-                    var atemp=document.createElement("a");
-                    atemp.href=temp["value"];
-                    atemp.target="_blank";
-                    atemp.innerHTML="·";
-                    ltemp.appendChild(atemp);
-                    msg.appendChild(ltemp);
-                    break;
-                default:
-                    break;
-            }
-        }
-        return box;
-    }
-    this.Node2mobj=function (node,type) {
-        //console.log(node.nodeName);
-        var mobj={"type":type,"content":[]};
-        switch (node.nodeName) {
-            case "#text":
-                mobj.content.push({"type":"t","value":node.textContent});
+                }*/
+                itemp.src=temp["value"];
+                msg.appendChild(itemp);
                 break;
-            case "IMG": //图片
-                mobj.content.push({"type":"img","value":node.src});
+            case "video":
+                var vtemp=document.createElement("video");
+                var stemp=document.createElement("source");
+                var atemp=document.createElement("a");
+                vtemp.controls="controls";
+                stemp.src=temp["value"];
+                stemp.type=temp["vtype"];
+                vtemp.appendChild(stemp);
+                atemp.href=temp["value"];
+                atemp.target="_blank";
+                atemp.innerHTML="啊呀，视频格式不支持>_<";
+                vtemp.appendChild(atemp);
+                msg.appendChild(vtemp);
                 break;
-            case "A":
-                mobj.content.push({"type":"link","value":node.href});
+            case "audio":
+                var atemp;
+                if(temp["atype"]=="audio/mid"){
+                    atemp=document.createElement("embed");
+                    atemp.src=temp["value"];
+                    atemp.width=20;
+                    atemp.height=20;
+                    msg.appendChild(atemp);
+                }else{
+                    atemp=document.createElement("audio");
+                    atemp.controls="controls";
+                    var stemp=document.createElement("source");
+                    var ltemp=document.createElement("a");
+                    stemp.src=temp["value"];
+                    stemp.type=temp["atype"];
+                    atemp.appendChild(stemp);
+                    ltemp.href=temp["value"];
+                    ltemp.target="_blank";
+                    ltemp.innerHTML="啊呀，音频格式不支持>_<";
+                    atemp.appendChild(ltemp);
+                    msg.appendChild(atemp);
+                }
+                break;
+            case "link":
+                var ltemp=document.createElement("div");
+                ltemp.className="linker";
+                var atemp=document.createElement("a");
+                atemp.href=temp["value"];
+                atemp.target="_blank";
+                atemp.innerHTML="·";
+                ltemp.appendChild(atemp);
+                msg.appendChild(ltemp);
+                break;
             default:
                 break;
         }
-        return mobj;
     }
-    this.file2msg=function (file) {
-        //console.log(file);
-        var ft=file["type"];
-        if(ft.startsWith("image")){
-            return {"type":"img","value":URL.createObjectURL(file)};
-        }else if(ft.startsWith("text")){
-            return {"type":"tf","value":"","file":file};
-        }else if(ft.startsWith("video")){
-            return {"type":"video","value":URL.createObjectURL(file),"vtype":ft};
-        }else if(ft.startsWith("audio")){
-            return {"type":"audio","value":URL.createObjectURL(file),"atype":ft};
-        }
+    return box;
+}
+Messager.prototype.Node2mobj=function (node,type) {
+    //console.log(node.nodeName);
+    var mobj={"type":type,"content":[]};
+    switch (node.nodeName) {
+        case "#text":
+            mobj.content.push({"type":"t","value":node.textContent});
+            break;
+        case "IMG": //图片
+            mobj.content.push({"type":"img","value":node.src});
+            break;
+        case "A":
+            mobj.content.push({"type":"link","value":node.href});
+        default:
+            break;
     }
+    return mobj;
+}
+Messager.prototype.file2msg=function (file) {
+    //console.log(file);
+    var ft=file["type"];
+    if(ft.startsWith("image")){
+        return {"type":"img","value":URL.createObjectURL(file)};
+    }else if(ft.startsWith("text")){
+        return {"type":"tf","value":"","file":file};
+    }else if(ft.startsWith("video")){
+        return {"type":"video","value":URL.createObjectURL(file),"vtype":ft};
+    }else if(ft.startsWith("audio")){
+        return {"type":"audio","value":URL.createObjectURL(file),"atype":ft};
+    }
+}
+Messager.prototype.textobj=function (text,type) {
+    var mobj={"type":type,"content":[]};
+    mobj.content.push({"type":"t","value":text});
+    return mobj;
+}
+Messager.prototype.linkobj=function(link,type){
+    var mobj={"type":type,"content":[]};
+    mobj.content.push({"type":"link","value":link});
+    return mobj;
+}
+Messager.prototype.addPS=function (text,p,s) {
+    var result="";
+    if(text.startsWith("|")){
+        result+=text.substring(1);
+    }else{
+        result+=p+text;
+    }
+    if(!text.endsWith("|")){
+        result+=s;
+    }else{
+        result=result.substring(0,result.length-1);
+    }
+    return result;
+}
+Messager.prototype.getWsMsg=function (type,msg) {
+    var wsmsg={wsMsgType:type,wsMsg:msg};
+    return wsmsg
+}
 
-    this.textobj=function (text,type) {
-        var mobj={"type":type,"content":[]};
-        mobj.content.push({"type":"t","value":text});
-        return mobj;
+
+function CommandOption(names,hasValue) {
+    if(typeof names=="string"){
+        names=[names];
     }
-    this.linkobj=function(link,type){
-        var mobj={"type":type,"content":[]};
-        mobj.content.push({"type":"link","value":link});
-        return mobj;
-    }
-    this.addPS=function (text,p,s) {
-        var result="";
-        if(text.startsWith("|")){
-            result+=text.substring(1);
-        }else{
-            result+=p+text;
+    this.names=names;
+    this.hasValue=hasValue||0;
+}
+CommandOption.prototype.isLongOrShort=function () {
+    var hasShort=false;
+    var hasLong=false;
+    var nl=this.names.length;
+    for(var i=0;i<nl;i++){
+        var per=this.names[i].slice(0,2);
+        if(per=="--"){
+            hasLong=true;
+        }else if(per.startsWith("-")){
+            hasShort=true;
         }
-        if(!text.endsWith("|")){
-            result+=s;
-        }else{
-            result=result.substring(0,result.length-1);
+        if(hasLong && hasShort){
+            return 2;
         }
-        return result;
     }
-    this.getWsMsg=function (type,msg) {
-        var wsmsg={wsMsgType:type,wsMsg:msg};
-        return wsmsg
+    if(hasShort){
+        return 0;
+    }else if(hasLong){
+        return 1;
+    }else{
+        throw new Error(this.names.join("/") + "是无效的opt");
+    }
+}
+CommandOption.prototype.isMatch=function (t) {
+    var nl=this.names.length;
+    for(var i=0;i<nl;i++){
+        if(t.startsWith(this.names[i])){
+            return true;
+        }
+    }
+    return false;
+}
+
+
+function Commander(){
+    this.command={};
+    this.shortspecial=[];
+    this.longspecial=[];
+    this.cons=[];
+}
+Commander.prototype.commandPrefix=[".","。","-","!","！","/"];
+Commander.prototype.isCommand=function(t){
+    return this.commandPrefix.includes(t.trim()[0]);
+}
+Commander.prototype.addSpecial=function (option) {
+    var sl=option.isLongOrShort();
+    if(sl==0){
+        this.shortspecial.push(option);
+    }else if(sl==1){
+        this.longspecial.push(option);
+    }else if(sl==2){
+        this.shortspecial.push(option);
+        this.longspecial.push(option);
+    }
+}
+Commander.prototype.setSpecial=function (s) {
+    s=s||[];
+    var sl=s.length;
+    for(var i=0;i<sl;i++){
+        this.addSpecial(s[i]);
+    }
+}
+Commander.prototype.hasSpecial=function () {
+    return this.shortspecial.length!=0 || this.longspecial.length!=0
+}
+Commander.prototype.opt=function (names,hasValue) {
+    var option=new CommandOption(names,hasValue);
+    this.addSpecial(option);
+    return this;
+} 
+Commander.prototype.getCommand=function (t) {
+    if(t==""){
+        return false;
+    }
+    var r=this.isCommand(t);
+    if(r){
+        this.cons=t.trim().split(" ");
+        this.command["type"]=this.cons[0][0];
+        this.command["command"]=this.cons[0].slice(1);
+        if(this.command["command"]==""){
+            return false;
+        }
+    }
+    return r;
+}
+Commander.prototype.parse=function (s) {
+    this.setSpecial(s||[]);
+    this.command["params"]=[];
+    var con=this.cons.slice(1);
+    if(!this.hasSpecial()){
+        this.command["params"]=con;
+        return;
+    }
+    while( con.length!=0 ){
+        if(!con[0].startsWith("-")){
+            this.command["params"].push(con[0]);
+            con=con.slice(1);
+        }else{
+            var matched=false;
+            if(con[0].startsWith("--")){
+                lsl=this.longspecial.length;
+                for(var i=0;i<lsl;i++){
+                    var ls=this.longspecial[i];
+                    if(ls.isMatch(con[0])){
+                        matched=true;
+                        var opt=con[0].slice(2);
+                        con=con.slice(1);
+                        if(ls.hasValue>0){
+                            this.command[opt]=[];
+                            while(con.length!=0 && !con[0].startsWith("-")){
+                                this.command[opt].push(con[0]);
+                                con=con.slice(1);
+                            }
+                            if(ls.hasValue==2 && this.command[opt].length==0){
+                                this.command[opt]=true;
+                            }
+                        }
+                        else{
+                            this.command[opt]=true;
+                        }
+                    }
+                }
+            }else{
+                ssl=this.shortspecial.length;
+                for(var i=0;i<ssl;i++){
+                    var ss=this.shortspecial[i];
+                    if(ss.isMatch(con[0])){
+                        matched=true;
+                        var opt=con[0].slice(1);
+                        con=con.slice(1);
+                        if(ss.hasValue==0 || con.length==0 || (ss.hasValue==2 && con[0].startsWith("-"))){
+                            this.command[opt]=true;
+                        }else{
+                            this.command[opt]=con[0];
+                            con=con.slice(1);
+                        }
+                    }
+                }
+            }
+            if(!matched){
+                this.command["params"].push(con[0]);
+                con=con.slice(1);
+            }
+        }
     }
 }

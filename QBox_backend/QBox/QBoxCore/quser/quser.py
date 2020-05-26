@@ -27,3 +27,13 @@ class quser():
     
     def getBox(self,bid):
         return self.boxes.get(str(bid),None)
+
+    def getChatBox(self,checkws=False):
+        for box in self.boxes.values():
+            if box.boxtype=="chatbox":
+                if checkws:
+                    if hasattr(box,"websocket"):
+                        return box
+                else:
+                    return box
+        return None

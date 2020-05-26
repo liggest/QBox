@@ -42,3 +42,13 @@ Array.prototype.findBoxIdxByNum=function (num) {
 Array.prototype.removeAt=function (idx) {
     return this.splice(idx,1);
 }
+
+Array.prototype.getAllBoxObj=function () {
+    var data=[];
+    var l=this.length;
+    for(var i=0;i<l;i++){
+        this[i].boxObjUpdate();
+        data.push( this[i].boxObj );
+    }
+    return data;
+}
