@@ -9,9 +9,9 @@ class UserProfile(models.Model):
     telephone = models.CharField('Telephone', max_length=50, blank=True)
     mod_date = models.DateTimeField('Last modified', auto_now=True)
 
-
 class Meta:
      verbose_name = 'User Profile'
+
 
 def __str__(self):
      return self.user.__str__()

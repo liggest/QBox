@@ -8,7 +8,7 @@ def updateByDefault(boxtype,data):
         boxtype="webpagebox"
         data.setdefault("src","/accounts/login/")
         data.setdefault("boxName","登录框")
-        data.setdefault("size",(285,330))
+        data.setdefault("size",(285,340))
     return boxtype,data
 
 def isInt(ckdata):
@@ -93,7 +93,7 @@ def getNewBoxPosition(user,newboxesize):
         tempx = box.position[0] + box.size[0]
         tempy = box.position[1] + box.size[1]
         exist.append([box.position[0],tempx,box.position[1],tempy])
-    print(exist[-1])
+    #print(exist[-1])
     #for i in range(len(boxposition)):
     #    tempx = boxposition[i][0] + boxsize[i][0]
     #    tempy = boxposition[i][1] + boxsize[i][1]
@@ -102,65 +102,81 @@ def getNewBoxPosition(user,newboxesize):
     sh = screensize[1]
 
     temp = []
+    print("exist:",exist)
     #for i in range(len(boxposition)):
     for i in range(len(exist)):
         countx = 0
         county = 0
-        while countx < sw and county < sh:
-            if countx < exist[i][0] and county < exist[i][2]:
-                if (countx + newboxesize[0] < exist[i][0] and county + newboxesize[1] < exist[i][2]) \
-                    or (countx + newboxesize[0] < exist[i][0] and county + newboxesize[1] >= exist[i][2]) \
-                        or (countx + newboxesize[0] >= exist[i][0] and county + newboxesize[1] < exist[i][2]):
+        while countx <= sw:
+            while county <= sh:
+                #print("countx",countx,"county",county)
+                if countx + newboxesize[0] < exist[i][0] or county + newboxesize[1] < exist[i][2]:
                     temp.append([countx,county])
+                    break
+                elif countx > exist[i][1] or county > exist[i][3]:
+                    temp.append([countx,county]) 
                     break
                 else:
-                    countx = exist[i][1] + 10
-                    temp.append([countx,county])
-                    break
-            elif (countx >= exist[i][0] and countx <= exist[i][1]) and (county < exist[i][2]):
-                if county + newboxesize[1] < exist[i][2]:
-                    temp.append(countx,county)
-                    break
-                else:
-                    countx = exist[i][1] + 10
-                    temp.append([countx,county])
-                    break
-            elif (countx >= exist[i][0] and countx <= exist[i][1]) and (county >= exist[i][2] and county <= exist[i][3]):
-                countx = exist[i][1] + 10
-                temp.append([countx,county])
-                break
-            elif (countx >= exist[i][0] and countx <= exist[i][1]) and (county > exist[i][3]):
-                temp.append([countx,county])
-                break         
-            elif (countx < exist[i][0]) and (county >= exist[i][2] and county < exist[i][3]):
-                if countx + newboxesize[0] < exist[i][0]:
-                    temp.append([county,county])
-                    break
-                else:
-                    county = exist[i][3] + 10
-                    temp.append([countx,county])
-                    break  
-            elif countx > exist[i][1] and county > exist[i][3]:
-                temp.append([countx,county])
-                break
-            else:
-                temp.append([countx,county])
-                break
+                    county = county + 100
+            countx = countx + 100
+#            if countx < exist[i][0] and county < exist[i][2]:
+#                if (countx + newboxesize[0] < exist[i][0] and county + newboxesize[1] < exist[i][2]) \
+#                    or (countx + newboxesize[0] < exist[i][0] and county + newboxesize[1] >= exist[i][2]) \
+#                        or (countx + newboxesize[0] >= exist[i][0] and county + newboxesize[1] < exist[i][2]):
+#                    temp.append([countx,county])
+#                    break
+#                else:
+#                    countx = exist[i][1] + 10
+#                    temp.append([countx,county])
+#                    break
+#            elif (countx >= exist[i][0] and countx <= exist[i][1]) and (county < exist[i][2]):
+#                if county + newboxesize[1] < exist[i][2]:
+#                    temp.append(countx,county)
+#                    break
+#                else:
+#                    countx = exist[i][1] + 10
+#                    temp.append([countx,county])
+#                    break
+#            elif (countx >= exist[i][0] and countx <= exist[i][1]) and (county >= exist[i][2] and county <= exist[i][3]):
+#                countx = exist[i][1] + 10
+#                temp.append([countx,county])
+#                break
+#            elif (countx >= exist[i][0] and countx <= exist[i][1]) and (county > exist[i][3]):
+#                temp.append([countx,county])
+#                break         
+#            elif (countx < exist[i][0]) and (county >= exist[i][2] and county < exist[i][3]):
+#                if countx + newboxesize[0] < exist[i][0]:
+#                    temp.append([county,county])
+#                    break
+#                else:
+#                    county = exist[i][3] + 10
+#                    temp.append([countx,county])
+#                    break  
+#            elif countx > exist[i][1] and county > exist[i][3]:
+#                temp.append([countx,county])
+#                break
+#            else:
+#                temp.append([countx,county])
+#                break
 
     x = -1
     y = -1
-    #print(temp)
+    print("temp:",temp)
     for i in range(len(temp)):
         for j in range(len(exist)):
-            if not ( (temp[i][0] + newboxesize[0] < exist[j][0] and temp[i][1] + newboxesize[1] < exist[j][2]) \
+            if  ( (temp[i][0] + newboxesize[0] < exist[j][0] and temp[i][1] + newboxesize[1] < exist[j][2]) \
                 or (temp[i][0] > exist[j][1] or temp[i][1] > exist[j][3]) \
-                    or (temp[i][0] + newboxesize[0] < exist[j][0] and temp[i][1] > exist[j][0]) \
-                        or (temp[i][0] > exist[j][0] and temp[i][1] + newboxesize[1] < exist[j][2])):
+                    or (temp[i][0] + newboxesize[0] < exist[j][0] and temp[i][1] + newboxesize[1]>= exist[j][2]) \
+                        or (temp[i][0] + newboxesize[0] >= exist[j][0] and temp[i][1] + newboxesize[1] < exist[j][2])):
+                pass
+            else:
                 temp[i][0] = -1
                 temp[i][1] = -1
+    print("midtemp",temp)
     for i in range(len(temp)):
-        if temp[i][0] > 0 and temp[i][0] < sw and temp[i][1] < sh:
+        if temp[i][0] >= 0 and temp[i][0] < sw and temp[i][1] < sh:
             x = temp[i][0]
-            y = temp[i][1]  
+            y = temp[i][1]
+            break  
     #print(temp)
     return x,y
