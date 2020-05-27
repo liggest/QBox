@@ -27,6 +27,11 @@ class WsConsumer(AsyncJsonWebsocketConsumer):
                 hellotext="你好呀，陌生人\n有什么可以帮忙的吗？"
             mobj=messager.getMsg( messager.getTextContent(hellotext) )
             await self.send_json(messager.getWsMessage(mobj))
+        else:
+            #后端未知的连接，连上之后尝试让前端刷新
+            await self.accept()
+            await self.send_json(messager.getWsMessage(".refresh","cmd"))
+            await self.close()
 
     async def disconnect(self, close_code): #连接关闭时
         pass
@@ -42,7 +47,7 @@ class WsConsumer(AsyncJsonWebsocketConsumer):
                 first=mobj["content"][0]
                 if first["type"]=="t":
                     if first["value"]=="登录":
-                        await self.send_json(messager.getWsMessage("login","cmd"))
+                        await self.send_json(messager.getWsMessage(".login","cmd"))
                 
                         
         elif content["wsMsgType"]=="heartbeat": #心跳

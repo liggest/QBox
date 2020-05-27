@@ -400,6 +400,8 @@ function Box(name,content,boxobj) {
                 }else if(received["wsMsgType"]=="cmd"){
                     //收到指令，备用
                     console.log(box.boxName+" 收到指令："+received["wsMsg"]);
+                    box.dealCommands(received["wsMsg"],[systemCommand]);
+                    /*
                     if(received["wsMsg"]=="login"){
                         $.get("/box/templates",{boxtype:"login", data:JSON.stringify({}) }).done(
                             function(data) {
@@ -408,7 +410,7 @@ function Box(name,content,boxobj) {
                                 new Box(nbName,boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
                             }
                         );
-                    }
+                    }*/
                 }
             }
             this.websocket.onclose = function () {
@@ -781,6 +783,63 @@ function Rect(left,top,width,height) {
 }
 */
 
+Box.prototype.dealCommands=function (cmds,extra) {
+    if(typeof cmds=="string"){
+        cmds=cmds.split("\n");
+    }else if( !(cmds instanceof Array) ){
+        cmds=[];
+    }
+    var cl=cmds.length;
+    var nodeals=[];
+    for(var i=0;i<cl;i++){
+        var cmder=new Commander();
+        if(cmder.getCommand( cmds[i] )){
+            var handled=false;
+            if(extra){
+                if(typeof extra=="function"){
+                    extra=[extra];
+                }else if( !(extra instanceof Array) ){
+                    extra=[];
+                }
+                var exl=extra.length;
+                for(var j=0;j<exl;j++){
+                    if(extra[j](cmder)){
+                        handled=true;
+                        break;
+                    }
+                }
+                if(handled){
+                    continue;
+                }
+            }
+            if(this.basicCommand(cmder)){
+                handled=true;
+                continue;
+            }
+            if(!handled){
+                nodeals.push(cmds[i]);
+            }
+        }else{
+            nodeals.push(cmds[i]);
+        }
+    }
+    return nodeals;
+}
+Box.prototype.basicCommand=function (cmder) {
+    var handled=true;
+    switch(cmder.command["command"]){
+        case "aaa":
+            break;
+        case "bbb":
+            break;
+        default:
+            handled=false;
+            break;
+    }
+    return handled;
+}
+
+
 
 function Messager() {
 
@@ -1098,4 +1157,31 @@ Commander.prototype.parse=function (s) {
             }
         }
     }
+}
+
+
+function systemCommand (cmder) {
+    var handled=true;
+    switch(cmder.command["command"]){
+        case "login":
+            $.get("/box/templates",{boxtype:"login", data:JSON.stringify({}) }).done(
+                function(data) {
+                    var boxobj=data;
+                    var nbName=boxobj["boxName"];
+                    new Box(nbName,boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
+                }
+            );
+            break;
+        case "refresh":
+            location.href=location.href;
+            break;
+        case "alert":
+            cmder.parse()
+            alert(cmder.command["params"].join(" "));
+            break;
+        default:
+            handled=false;
+            break;
+    }
+    return handled;
 }
