@@ -86,7 +86,7 @@ def checkDataByFunc(ckdata,cf):
 '''
 def getNewBoxPosition(user,newboxesize):
     #screensize,boxposition,boxsize
-    print(user.screenSize)
+    #print(user.screenSize)
     screensize=user.screenSize
     exist = []
     for box in user.boxes.values():
@@ -102,7 +102,7 @@ def getNewBoxPosition(user,newboxesize):
     sh = screensize[1]
 
     temp = []
-    print("exist:",exist)
+    #print("exist:",exist)
     #for i in range(len(boxposition)):
     for i in range(len(exist)):
         countx = 0
@@ -161,7 +161,7 @@ def getNewBoxPosition(user,newboxesize):
 
     x = -1
     y = -1
-    print("temp:",temp)
+    #print("temp:",temp)
     for i in range(len(temp)):
         for j in range(len(exist)):
             if  ( (temp[i][0] + newboxesize[0] < exist[j][0] and temp[i][1] + newboxesize[1] < exist[j][2]) \
@@ -172,7 +172,7 @@ def getNewBoxPosition(user,newboxesize):
             else:
                 temp[i][0] = -1
                 temp[i][1] = -1
-    print("midtemp",temp)
+    #print("midtemp",temp)
     for i in range(len(temp)):
         if temp[i][0] >= 0 and temp[i][0] < sw and temp[i][1] < sh:
             x = temp[i][0]

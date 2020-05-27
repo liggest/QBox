@@ -49,7 +49,7 @@ class Option():
 class CommandParser():
     '''
         用来处理一行指令\n
-        例: .command param1 param2 -shortopt1 -shortopt2 short2 --longopt long1 long2 long3
+        例: .cmd param1 param2 -s1 -s2 s2val --l lval1 lval2 lval3
     '''
     #text=""
     #command={}
@@ -196,11 +196,13 @@ class CommandParser():
 
 if __name__=="__main__":
     cp=CommandParser()
-    cmd="！login 1313123 -a -z -s 888 --c 12 13 -x"
+    #cmd="！login 1313123 -a -z -s 888 --c 12 13 -x"
+    cmd=".cmd param1 param2 -s1 -s2 s2val --l lval1 lval2 lval3"
     if cp.getCommand(cmd):
-        print(cp.separateCommand("lo"))
-        print(cp.separateCommand("logi"))
-        cp.opt(["-z","-a"],2).opt("--c",1).parse()
+        #print(cp.separateCommand("lo"))
+        #print(cp.separateCommand("logi"))
+        #cp.opt(["-z","-a"],2).opt("--c",1).parse()
+        cp.opt("-s1",2).opt("-s2",1).opt("--l",1).parse()
         print(cp.command)
     else:
         print("不是命令")
