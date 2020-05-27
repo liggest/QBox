@@ -146,13 +146,40 @@ boxLists.removeAt=function (idx) {
 //#endregion
 
 //csrf问题
-var csrftoken = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        var cl=cookies.length;
+        for (var i=0;i<cl;i++) {
+            var cookie=cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
+var csrfupdate=false;
 var csrfmethods = ["POST","DELETE","PUT"];
+function OnFrameLoad(event) {
+    if(event.target.src.startsWith(location.origin)){
+        csrfupdate=true;
+        //console.log("同源");
+    }
+}
 //console.log(csrftoken);
 
 $.ajaxSetup({  //为csrfmethods添加csrf头
     beforeSend: function(xhr, settings) {
         if (csrfmethods.includes(settings.type) && !this.crossDomain) {
+            if(csrfupdate){
+                csrftoken=getCookie('csrftoken');
+                csrfupdate=false;
+                console.log("csrfupdate");
+            }
             xhr.setRequestHeader("X-CSRFToken", csrftoken);
         }
     }

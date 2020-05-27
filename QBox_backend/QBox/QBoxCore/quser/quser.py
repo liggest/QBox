@@ -1,3 +1,5 @@
+from asgiref.sync import async_to_sync
+from ..message import messager
 
 class quser():
 
@@ -37,3 +39,12 @@ class quser():
                 else:
                     return box
         return None
+
+    def trySend(self,text):
+        wsbox=self.getChatBox(checkws=True)
+        if wsbox:
+            mobj=messager.getMsg( messager.getTextContent(text) )
+            async_to_sync( wsbox.websocket.send_json )(messager.getWsMessage(mobj))
+            return True
+        return False
+
