@@ -124,13 +124,9 @@ def getStatus(request):
     return HttpResponse("",status=405)
 
 def test(request):
-    cbox=qbcore.getUser(request).getChatBox(checkws=True)
-    if cbox:
-        mobj=messager.getMsg( messager.getTextContent("测试") )
-        async_to_sync( cbox.websocket.send_json )(messager.getWsMessage(mobj))
+    if qbcore.getUser(request).trySend("测试"):
         return HttpResponse("test")
-    else:
-        return HttpResponse("没法test")
+    return HttpResponse("没法test")
 
 '''
 def getWebSocket(request,bid):

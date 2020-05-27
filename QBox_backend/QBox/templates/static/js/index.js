@@ -146,7 +146,10 @@ boxLists.removeAt=function (idx) {
 //#endregion
 
 //csrf问题
-var csrftoken = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+function getcsrfinput() {
+    return document.getElementsByName('csrfmiddlewaretoken')[0];
+}
+var csrftoken = getcsrfinput().value;
 var csrfmethods = ["POST","DELETE","PUT"];
 //console.log(csrftoken);
 

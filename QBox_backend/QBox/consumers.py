@@ -37,8 +37,8 @@ class WsConsumer(AsyncJsonWebsocketConsumer):
             mobj=content["wsMsg"]
             print(mobj)
             if mobj["type"]==1:
-                mobj["type"]=0
-                await self.send_json(content)
+                #mobj["type"]=0
+                #await self.send_json(content)
                 first=mobj["content"][0]
                 if first["type"]=="t":
                     if first["value"]=="登录":

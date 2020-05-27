@@ -41,7 +41,9 @@ def login(request):
         if user is not None and user.is_active:
             uid=util.getUserKey(request)
             auth.login(request, user)
-            qbcore.transferUser(uid,request)
+            if qbcore.transferUser(uid,request):
+                newuid=util.getUserKey(request)
+                qbcore.getUserFromID(newuid).trySend("%s\n欢迎回来~"%str(newuid))
             #return HttpResponseRedirect("/")
             return render(request, 'login.html', {'form': None})
         else:
