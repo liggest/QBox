@@ -12,6 +12,7 @@ from .QBoxCore.Box import Box,boxdata
 from .QBoxCore.core import core,util
 from .QBoxCore.quser import quser
 from .QBoxCore.message import messager
+from .models import UserBoxObj
 
 qbcore=core.core()
 
@@ -72,6 +73,9 @@ def userExit(request):
         if request.user.is_authenticated:
             #应该做点啥
             pass
+        #测试了一下能不能存json，好像是可以的
+        #test = UserBoxObj(userId=request.user,box={ "name":"John" })
+        #test.save()
         qbcore.deleteUser(request)
         print("处理",util.getUserKey(request),"的后事")
     return HttpResponse("")
@@ -146,3 +150,8 @@ def getWebSocket(request,bid):
                 ws.websocket=request.websocket
 '''
 
+#def SaveBoxObj(request):
+'''
+将json文件存入数据库，需要有两个参数，一个是uerId,这应该是一个user实例，用request.user应该就可以得到
+然后就是box，这个是用来存json文件的
+'''

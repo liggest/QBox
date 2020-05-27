@@ -30,8 +30,9 @@
     text-align: center;
 }
 
-a,a:active{
+a,a:active,a:link,a:visited{
     text-decoration:none;
-    font-size:10px
+    font-size:14px;
+    color: black;
 }
 

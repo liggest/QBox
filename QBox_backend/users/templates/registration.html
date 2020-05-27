@@ -8,12 +8,13 @@
 </head>
 <body>
 
-<h4 style="text-align: center">登录</h4>
+<h4 style="text-align: center">注册</h4>
 <form method="post" action="" enctype="multipart/form-data">
     {% csrf_token %}
     {{form}}
     <div class="loginbutton">
         <input type="submit" value="注册" />
+        <button><a href="accounts/login/">返回</a></button>
     </div>
 </form>
 
