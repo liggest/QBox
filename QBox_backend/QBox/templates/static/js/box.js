@@ -27,12 +27,6 @@ function Box(name,content,boxobj) {
     this.dragger=undefined;
     this.boxList=undefined;
     var box=this;
-    this.setName=function (name) {
-        name=String(name);
-        this.boxName=name;
-        this.title.innerText=name;
-        this.backtitle.innerText=name+"-设置";
-    }
     this.setName(name||boxobj["boxName"]||"未命名框");
     this.init=function (container,boxLists,dragger) {
         boxLists.push(this);
@@ -72,7 +66,7 @@ function Box(name,content,boxobj) {
     }
     //#endregion
     //#region initByBoxData
-    this.initByBoxData=function(boxobj){
+    Box.prototype.initByBoxData=function(boxobj){
         var boxtype=boxobj["boxtype"];
         switch(boxtype){
             case "chatbox":
@@ -391,27 +385,17 @@ function Box(name,content,boxobj) {
                 var received = JSON.parse(evt.data);
                 if (received["wsMsgType"]=="heartbeat"){
                     //console.log(box.boxName+" 收到了心跳");
-                    box.wsHeartBeatReset();
+                    
                 }else if(received["wsMsgType"]=="msg"){
                     box.sendMsg(received["wsMsg"]);
                     console.log(box.boxName+" 有消息了：");
                     console.log(received["wsMsg"]);
-                    box.wsHeartBeatReset();
                 }else if(received["wsMsgType"]=="cmd"){
                     //收到指令，备用
                     console.log(box.boxName+" 收到指令："+received["wsMsg"]);
-                    box.dealCommands(received["wsMsg"],[systemCommand]);
-                    /*
-                    if(received["wsMsg"]=="login"){
-                        $.get("/box/templates",{boxtype:"login", data:JSON.stringify({}) }).done(
-                            function(data) {
-                                var boxobj=data;
-                                var nbName=boxobj["boxName"];
-                                new Box(nbName,boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
-                            }
-                        );
-                    }*/
+                    box.dealCommands(received["wsMsg"]);
                 }
+                box.wsHeartBeatReset();
             }
             this.websocket.onclose = function () {
                 console.log("连接关闭");
@@ -470,7 +454,7 @@ function Box(name,content,boxobj) {
         this.backendinit=function () {
             var xhr=oldBackendinit();
             xhr.done(function(data) {
-                console.log("hack了框！");
+                //console.log("hack了框！");
                 box.wsConnect();
             });
         }
@@ -478,9 +462,9 @@ function Box(name,content,boxobj) {
         //#region others
         var oldSelfDestroy=this.selfDestroy;
         this.selfDestroy=function () {
-            console.log("自爆");
+            //console.log("chatbox自毁");
             this.wsDisconnect();
-            oldSelfDestroy.apply(this)
+            oldSelfDestroy.apply(this);
         }
         //#endregion
     }
@@ -500,76 +484,15 @@ function Box(name,content,boxobj) {
         });
         return xhr;
     }
-    this.getInnerBox=function(boxobj){
+    Box.prototype.getInnerBox=function(boxobj){
         this.midcontent.innerHTML+=boxobj["boxhtml"];
         this.initByBoxData(boxobj);
         this.backendinit();
     }
+    //#endregion
 
-    //#endregion
-    //#region update
-    this.backendUpdate=function (data) {
-        $.post("/box/update/"+ this.boxNum +"/",{data:JSON.stringify(data)} ).done(function (data) {
-            console.log(data);
-        })
-    }
-    this.boxObjUpdate=function(data){
-        this.boxObj["position"]=this.getPosition()
-        this.boxObj["size"]=this.getSize()
-        this.boxObj["boxName"]=this.boxName
-        //this.boxObj["bid"]=this.boxNum
-        var bhtml="";
-        childrens=this.midcontent.children;
-        cl=childrens.length;
-        for(var i=1;i<cl;i++){
-            bhtml+=childrens[i].innerHTML;
-        }
-        this.boxObj["boxhtml"]=bhtml;
-        if(data){
-            this.boxObj["data"]=data
-        }
-    }
-    //#endregion
+    //#region interaction events
     //#region resize
-    this.movePosition=function (x,y) {
-        var [l,t]=this.getPosition();
-        this.content.style.left=l+x+"px";
-        this.content.style.top=t+y+"px";
-    }
-    this.getPosition=function () {
-        var l=this.content.style.left;
-        var t=this.content.style.top;
-        l=l==""?0:Number(l.slice(0,-2));
-        t=t==""?0:Number(t.slice(0,-2));
-        return [l,t];
-    }
-    this.setPosition=function(x,y){
-        this.content.style.left=x+"px";
-        this.content.style.top=y+"px";
-    }
-    this.getSize=function () {
-        var w=this.content.style.width;
-        var h=this.content.style.height;
-        w=w.endsWith("px")?Number(w.slice(0,-2)):box.content.offsetWidth;
-        h=h.endsWith("px")?Number(h.slice(0,-2)):box.content.offsetHeight;
-        return [w,h];
-    }
-    this.setSize=function (w,h) {
-        this.content.style.width=w+"px";
-        this.content.style.height=h+"px";
-    }
-    this.moveTo=function(x,y,time,ease){
-        $(this.content).animate({
-            left:x,
-            top:y
-        },time||600,ease||"easeOutCubic")
-    }
-    this.resizeTo=function(w,h,time,ease){
-        $(this.content).animate({
-            width:w,
-            height:h
-        },time||600,ease||"easeOutCubic")
-    }
     this.resizeBegin=function () {
         //var offsetX=offsets[this.content.style.position]["moveOffsetX"];
         //var offsetY=offsets[this.content.style.position]["moveOffsetY"];
@@ -723,7 +646,7 @@ function Box(name,content,boxobj) {
             clearTimeout(box.longPressFunc);
         }
     }
-    this.longPress=function () {
+    Box.prototype.longPress=function () {
         if(!this.resizeMode){
             this.resizeBegin();
         }
@@ -742,7 +665,7 @@ function Box(name,content,boxobj) {
     }
     this.frontcontent.firstElementChild.addEventListener("click",this.frontClose);
     //#endregion
-
+    //#endregion
 
     //#region others
     this.selfDestroy=function () {
@@ -763,26 +686,7 @@ function Box(name,content,boxobj) {
     this.getInnerBox(boxobj); //类创建的最后，按boxobj开始加载
 }
 
-/*
-function Rect(left,top,width,height) {
-    this.l=left;
-    this.t=top;
-    this.w=width;
-    this.h=height;
-    Object.defineProperty(Rect,"size",{
-       get:function(){
-           return this.w*this.h;
-       } 
-    });
-    this.resize=function(l,t,w,h){
-        this.l=l;
-        this.t=t;
-        this.w=w;
-        this.h=h;
-    };
-}
-*/
-
+//#region Box command
 Box.prototype.dealCommands=function (cmds,extra) {
     if(typeof cmds=="string"){
         cmds=cmds.split("\n");
@@ -795,6 +699,10 @@ Box.prototype.dealCommands=function (cmds,extra) {
         var cmder=new Commander();
         if(cmder.getCommand( cmds[i] )){
             var handled=false;
+            if(systemCommand.call(this,cmder)){
+                handled=true;
+                continue;
+            }
             if(extra){
                 if(typeof extra=="function"){
                     extra=[extra];
@@ -803,7 +711,7 @@ Box.prototype.dealCommands=function (cmds,extra) {
                 }
                 var exl=extra.length;
                 for(var j=0;j<exl;j++){
-                    if(extra[j](cmder)){
+                    if(extra[j].call(this,cmder)){
                         handled=true;
                         break;
                     }
@@ -838,9 +746,91 @@ Box.prototype.basicCommand=function (cmder) {
     }
     return handled;
 }
+//#endregion
+//#region Box attributes
+Box.prototype.setName=function (name) {
+    name=String(name);
+    this.boxName=name;
+    this.title.innerText=name;
+    this.backtitle.innerText=name+"-设置";
+}
+Box.prototype.movePosition=function (x,y) {
+    var [l,t]=this.getPosition();
+    this.content.style.left=l+x+"px";
+    this.content.style.top=t+y+"px";
+}
+Box.prototype.getPosition=function () {
+    var l=this.content.style.left;
+    var t=this.content.style.top;
+    l=l==""?0:Number(l.slice(0,-2));
+    t=t==""?0:Number(t.slice(0,-2));
+    return [l,t];
+}
+Box.prototype.setPosition=function(x,y){
+    this.content.style.left=x+"px";
+    this.content.style.top=y+"px";
+}
+Box.prototype.getSize=function () {
+    var w=this.content.style.width;
+    var h=this.content.style.height;
+    w=w.endsWith("px")?Number(w.slice(0,-2)):box.content.offsetWidth;
+    h=h.endsWith("px")?Number(h.slice(0,-2)):box.content.offsetHeight;
+    return [w,h];
+}
+Box.prototype.setSize=function (w,h) {
+    this.content.style.width=w+"px";
+    this.content.style.height=h+"px";
+}
+Box.prototype.moveTo=function(x,y,time,ease,callfunc){
+    $(this.content).animate({
+        left:x,
+        top:y
+    },time||600,ease||"easeOutCubic",callfunc||undefined);
+}
+Box.prototype.resizeTo=function(w,h,time,ease,callfunc){
+    $(this.content).animate({
+        width:w,
+        height:h
+    },time||600,ease||"easeOutCubic",callfunc||undefined);
+}
+//#endregion
+//#region Box update
+Box.prototype.backendUpdate=function (data) {
+    $.post("/box/update/"+ this.boxNum +"/",{data:JSON.stringify(data)} ).done(function (data) {
+        console.log(data);
+    });
+}
+Box.prototype.boxObjUpdate=function(data){
+    this.boxObj["position"]=this.getPosition();
+    this.boxObj["size"]=this.getSize();
+    this.boxObj["boxName"]=this.boxName;
+    //this.boxObj["bid"]=this.boxNum
+    var bhtml="";
+    childrens=this.midcontent.children;
+    cl=childrens.length;
+    for(var i=1;i<cl;i++){
+        bhtml+=childrens[i].innerHTML;
+    }
+    this.boxObj["boxhtml"]=bhtml;
+    if(data){
+        this.boxObj["data"]=data;
+    }
+}
+//#endregion
 
+//#region Box static
+Box.prototype.newBox=function(boxtype,data){
+    $.get("/box/templates",{boxtype:boxtype, data:JSON.stringify(data||{}),width:document.body.clientWidth,height:document.body.clientHeight}).done(
+        function(bdata) {
+            var boxobj=bdata;
+            var nbName=boxobj["boxName"];
+            new Box(nbName,boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
+        }
+    );
+}
+//#endregion
 
-
+//#region Messager
 function Messager() {
 
 }
@@ -1003,8 +993,9 @@ Messager.prototype.getWsMsg=function (type,msg) {
     var wsmsg={wsMsgType:type,wsMsg:msg};
     return wsmsg
 }
+//#endregion
 
-
+//#region Commander
 function CommandOption(names,hasValue) {
     if(typeof names=="string"){
         names=[names];
@@ -1158,19 +1149,13 @@ Commander.prototype.parse=function (s) {
         }
     }
 }
-
+//#endregion
 
 function systemCommand (cmder) {
     var handled=true;
     switch(cmder.command["command"]){
         case "login":
-            $.get("/box/templates",{boxtype:"login", data:JSON.stringify({}) }).done(
-                function(data) {
-                    var boxobj=data;
-                    var nbName=boxobj["boxName"];
-                    new Box(nbName,boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
-                }
-            );
+            Box.prototype.newBox("login",{});
             break;
         case "refresh":
             location.href=location.href;
@@ -1179,9 +1164,34 @@ function systemCommand (cmder) {
             cmder.parse()
             alert(cmder.command["params"].join(" "));
             break;
+        case "save":
+            var allBoxObj=JSON.stringify( boxLists.getAllBoxObj() );
+            break;
+        case "wait":
+
         default:
             handled=false;
             break;
     }
     return handled;
 }
+
+/*
+function Rect(left,top,width,height) {
+    this.l=left;
+    this.t=top;
+    this.w=width;
+    this.h=height;
+    Object.defineProperty(Rect,"size",{
+       get:function(){
+           return this.w*this.h;
+       } 
+    });
+    this.resize=function(l,t,w,h){
+        this.l=l;
+        this.t=t;
+        this.w=w;
+        this.h=h;
+    };
+}
+*/

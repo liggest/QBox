@@ -20,7 +20,7 @@ window.onmousemove=getMousePos;
 window.onmouseup=pressEnd;
 window.onmouseout=pressEnd;
 */
-var xhr = new XMLHttpRequest();
+//var xhr = new XMLHttpRequest();
 
 
 function Dragger() {
@@ -145,7 +145,7 @@ boxLists.removeAt=function (idx) {
 }*/
 //#endregion
 
-//csrf问题
+//#region CSRF
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -184,6 +184,7 @@ $.ajaxSetup({  //为csrfmethods添加csrf头
         }
     }
 });
+//#endregion
 
 
 var container=document.body;
