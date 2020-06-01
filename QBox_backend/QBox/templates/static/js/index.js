@@ -244,8 +244,11 @@ function KeyListener() {
     var kl=this;
     this.onPress=function (enevt) {
         if(enevt.keyCode==13){
-            console.log("我要发送了！");
-            currentFocus.clickSubmit();
+            if(currentFocus.hasOwnProperty("clickSubmit")){
+                console.log("我要发送了！");
+                currentFocus.clickSubmit();
+            }
+            
         }
     }
     window.addEventListener("keypress",this.onPress);

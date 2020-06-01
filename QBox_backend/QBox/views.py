@@ -55,7 +55,11 @@ def getInnerBox(request):
             boxobj["size"]=data.get("size",(200, 200))
             position=data.get("position",None)
             if not position:
-                (px,py)=boxdata.getNewBoxPosition(qbcore.getUser(request),boxobj["size"])
+                width=int(request.GET.get("width",1920) )
+                height=int(request.GET.get("height",1080) )
+                user=qbcore.getUser(request)
+                user.screenSize=(width,height)
+                (px,py)=boxdata.getNewBoxPosition(user,boxobj["size"])
                 if px==-1:
                     px=20
                 if py==-1:

@@ -215,32 +215,18 @@ function Box(name,content,boxobj) {
         this.innercontent.addEventListener("dragover",this.onfileDrag);
         this.innercontent.addEventListener("drop",this.onfileDrop);
         this.nextBoxes=[];
-        /*
-        this.nextBoxes.findBoxByName=function (name) {
-            var l=this.length;
-            for(var i=0;i<l;i++){
-                if(this[i].boxName==name){
-                    return this[i];
-                }
-            }
-            return undefined;
-        }
-        this.nextBoxes.findBoxIdxByName=function (name) {
-            var l=this.length;
-            for(var i=0;i<l;i++){
-                if(this[i].boxName==name){
-                    return i;
-                }
-            }
-            return -1;
-        }
-        this.nextBoxes.removeAt=function (idx) {
-            return this.slice(0,idx).concat(this.slice(idx+1));
-        }*/
         this.prefix="";
         this.suffix="";
         this.analyze=function (text) {
             var mobj;
+            if(Commander.prototype.isCommand(text)){
+                nodeals=this.processCommands(text);
+                if(nodeals.length>0){
+                    //交给后端处理
+                    
+                }
+            }
+        /*
             var ts=text.split(" ");
             if(text.startsWith("我要")){
                 var stext=text.substring(2).trim();
@@ -330,7 +316,7 @@ function Box(name,content,boxobj) {
             }else if(text=="自毁"){
                 box.selfDestroy();
             }
-            /*
+            
             else if(text=="云端留言板"){
                 $.get("/box/templates",{boxtype:"cloudmsg",data:{}}).done(
                     function(data) {
@@ -338,9 +324,9 @@ function Box(name,content,boxobj) {
                         new Box("云端留言板",boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
                     }
                 );
-            }*/
+            }
             else{
-                /*
+                
                 mobj=messager.textobj(text,1);
                 xhr.open('post', "http://127.0.0.1:8080/api/",true);
                 xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -352,8 +338,9 @@ function Box(name,content,boxobj) {
                         }
                     }
                 };
-                xhr.send(messager.mobj2JSON(mobj));*/
+                xhr.send(messager.mobj2JSON(mobj));
             }
+        */
         }
         this.refresh=function () {
             this.chat.innerHTML="";
@@ -393,7 +380,7 @@ function Box(name,content,boxobj) {
                 }else if(received["wsMsgType"]=="cmd"){
                     //收到指令，备用
                     console.log(box.boxName+" 收到指令："+received["wsMsg"]);
-                    box.dealCommands(received["wsMsg"]);
+                    box.processCommands(received["wsMsg"]);
                 }
                 box.wsHeartBeatReset();
             }
@@ -687,7 +674,7 @@ function Box(name,content,boxobj) {
 }
 
 //#region Box command
-Box.prototype.dealCommands=function (cmds,extra) {
+Box.prototype.processCommands=function (cmds,extra) {
     if(typeof cmds=="string"){
         cmds=cmds.split("\n");
     }else if( !(cmds instanceof Array) ){
@@ -815,6 +802,19 @@ Box.prototype.boxObjUpdate=function(data){
     if(data){
         this.boxObj["data"]=data;
     }
+}
+//#endregion
+//#region Box input output
+Box.prototype.input=function(data){
+    if(this.check(data)){
+
+    }
+}
+Box.prototype.output=function(data){
+
+}
+Box.prototype.check=function(data){
+
 }
 //#endregion
 
@@ -1045,7 +1045,7 @@ function Commander(){
 }
 Commander.prototype.commandPrefix=[".","。","-","!","！","/"];
 Commander.prototype.isCommand=function(t){
-    return this.commandPrefix.includes(t.trim()[0]);
+    return Commander.prototype.commandPrefix.includes(t.trim()[0]);
 }
 Commander.prototype.addSpecial=function (option) {
     var sl=option.isLongOrShort();

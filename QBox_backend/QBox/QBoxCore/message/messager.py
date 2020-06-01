@@ -19,4 +19,7 @@ def getMsg(contents=(),sender=0):
     return {"type":sender,"content":contents}
 
 def getTextContent(text):
+    '''
+        得到文本类型的content
+    '''
     return (getMsgContent(text), )
