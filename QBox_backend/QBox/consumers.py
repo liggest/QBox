@@ -4,7 +4,7 @@ import json
 from .views import qbcore
 
 from .QBoxCore.core import util
-from .QBoxCore.message import messager
+from .QBoxCore.message import messager,response
 
 
 class WsConsumer(AsyncJsonWebsocketConsumer):
@@ -41,6 +41,12 @@ class WsConsumer(AsyncJsonWebsocketConsumer):
             print("来自",self.box.name,"的消息：")
             mobj=content["wsMsg"]
             print(mobj)
+            remsgs,recmds=response.processMessages(mobj)
+            if recmds!="":
+                await self.send_json(messager.getWsMessage(recmds,"cmd"))
+            for text in remsgs:
+                await self.send_json(messager.getWsMessage( messager.getMsg( messager.getTextContent(text) ) ))
+            '''
             if mobj["type"]==1:
                 #mobj["type"]=0
                 #await self.send_json(content)
@@ -48,6 +54,7 @@ class WsConsumer(AsyncJsonWebsocketConsumer):
                 if first["type"]=="t":
                     if first["value"]=="登录":
                         await self.send_json(messager.getWsMessage(".login","cmd"))
+            '''
                 
                         
         elif content["wsMsgType"]=="heartbeat": #心跳
@@ -56,6 +63,9 @@ class WsConsumer(AsyncJsonWebsocketConsumer):
             await self.send_json(content)
 
         elif content["wsMsgType"]=="cmd":
+            recmds=response.processCommands(content["wsMsg"])
+            if recmds!="":
+                await self.send_json(messager.getWsMessage(recmds,"cmd"))
             pass #收到了指令
 
     '''

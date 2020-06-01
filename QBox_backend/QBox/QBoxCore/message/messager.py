@@ -23,3 +23,13 @@ def getTextContent(text):
         得到文本类型的content
     '''
     return (getMsgContent(text), )
+
+def getTextFromMobj(mobj):
+    '''
+        得到mobj里的所有文本
+    '''
+    result=""
+    for con in mobj["content"]:
+        if con["type"]=="t":
+            result+=con["value"]+" "
+    return result.strip()

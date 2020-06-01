@@ -1149,13 +1149,21 @@ Commander.prototype.parse=function (s) {
         }
     }
 }
+Commander.prototype.getParams=function(){
+    return this.command["params"].join(" ");
+}
 //#endregion
 
 function systemCommand (cmder) {
     var handled=true;
     switch(cmder.command["command"]){
-        case "login":
-            Box.prototype.newBox("login",{});
+        case "user":
+            cmder.parse()
+            params=cmder.getParams();
+            if(params==="login" || params==="logout"){
+                Box.prototype.newBox("login",{});
+            }
+            console.log("快要登录了！");
             break;
         case "refresh":
             location.href=location.href;
@@ -1172,7 +1180,7 @@ function systemCommand (cmder) {
             var allBoxObj=JSON.stringify( boxLists.getAllBoxObj() );
             break;
         case "wait":
-
+            break;
         default:
             handled=false;
             break;

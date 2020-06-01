@@ -23,4 +23,5 @@ urlpatterns = [
     #path("cloudmsg/",include("cloudmsg.urls")),
     path('admin/', admin.site.urls),
     path("accounts/", include('users.urls')), #用户系统的URL
+    path("commands/", qview.CommandView.as_view()) #处理一些指令
 ]

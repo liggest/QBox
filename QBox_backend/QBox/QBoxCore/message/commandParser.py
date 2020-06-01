@@ -66,8 +66,11 @@ class CommandParser():
     def __getitem__(self,key):
         return self.command.get(key,None)
 
-    def isCommand(self,t):
+    @staticmethod
+    def isCommand(t):
         temp=t.lstrip()
+        if t=="":
+            return False
         return temp[0] in CommandParser.commandPrefix
 
     def addSpecial(self,option):
@@ -96,7 +99,7 @@ class CommandParser():
     def getCommand(self,t):
         if t=="":
             return False
-        r=self.isCommand(t)
+        r=CommandParser.isCommand(t)
         if r:
             self.cons=t.strip().split()
             self.command["type"]=self.cons[0][0]

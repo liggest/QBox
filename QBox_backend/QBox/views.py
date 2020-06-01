@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse,JsonResponse,HttpResponseNotModified,HttpResponseNotAllowed
+from django.views import View
 from QBox_backend.settings import BASE_DIR
 from django.views.decorators.csrf import csrf_exempt
 import os
@@ -11,7 +12,7 @@ from asgiref.sync import async_to_sync
 from .QBoxCore.Box import Box,boxdata
 from .QBoxCore.core import core,util
 from .QBoxCore.quser import quser
-from .QBoxCore.message import messager
+from .QBoxCore.message import messager,commandParser,response
 from .models import UserBoxObj
 
 qbcore=core.core()
@@ -135,6 +136,19 @@ def test(request):
     if qbcore.getUser(request).trySend("测试"):
         return HttpResponse("test")
     return HttpResponse("没法test")
+
+
+class CommandView(View):
+
+    def get(self,request):
+        return JsonResponse({})
+
+    def post(self,request):
+        cmds=request.POST.get("commands","")
+        recmds={"commands":""}
+        if commandParser.CommandParser.isCommand(cmds):
+            response.processCommands(cmds)
+        return JsonResponse(recmds)
 
 '''
 def getWebSocket(request,bid):
