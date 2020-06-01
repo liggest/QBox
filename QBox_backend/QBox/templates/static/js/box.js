@@ -1165,6 +1165,10 @@ function systemCommand (cmder) {
             alert(cmder.command["params"].join(" "));
             break;
         case "save":
+            var name=cmder.command["params"].join(" ");
+            if(name===""){
+                name="latest";
+            }
             var allBoxObj=JSON.stringify( boxLists.getAllBoxObj() );
             break;
         case "wait":
