@@ -196,6 +196,9 @@ class CommandParser():
     
     def refresh(self):
         self.__init__()
+    
+    def getParams(self):
+        return " ".join(self.command["params"])
 
 if __name__=="__main__":
     cp=CommandParser()

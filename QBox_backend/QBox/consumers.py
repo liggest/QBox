@@ -41,8 +41,9 @@ class WsConsumer(AsyncJsonWebsocketConsumer):
             print("来自",self.box.name,"的消息：")
             mobj=content["wsMsg"]
             print(mobj)
-            remsgs,recmds=response.processMessages(mobj)
-            if recmds!="":
+            remsgs,cmds=response.processMessages(mobj)
+            if cmds!="":
+                recmds=response.processCommands(cmds,nodeals=True)
                 await self.send_json(messager.getWsMessage(recmds,"cmd"))
             for text in remsgs:
                 await self.send_json(messager.getWsMessage( messager.getMsg( messager.getTextContent(text) ) ))

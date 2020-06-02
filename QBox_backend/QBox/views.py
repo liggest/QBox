@@ -147,7 +147,7 @@ class CommandView(View):
         cmds=request.POST.get("commands","")
         recmds={"commands":""}
         if commandParser.CommandParser.isCommand(cmds):
-            response.processCommands(cmds)
+            recmds["commands"]=response.processCommands(cmds)
         return JsonResponse(recmds)
 
 '''

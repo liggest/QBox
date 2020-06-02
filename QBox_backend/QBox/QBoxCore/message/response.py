@@ -5,13 +5,21 @@ from django.core.cache import cache
 from django_redis import get_redis_connection
 import pickle
 
-def processCommands(cmds):
+def processCommands(cmds,nodeals=False):
     cmds=cmds.split("\n")
     recmds=[]
+    nodeals=[]
     for cmd in cmds:
         cp=CommandParser()
-        if cp.getCommand(cmds):
-            recmds+=basicCommand(cp)
+        if cp.getCommand(cmd):
+            print("处理指令：",cmd)
+            result=basicCommand(cp)
+            if result:
+                recmds+=result
+            else:
+                nodeals.append(cmd)
+    if nodeals:
+        return "\n".join(nodeals+recmds)
     return "\n".join(recmds)
 
 def basicCommand(cp:CommandParser):
@@ -23,7 +31,29 @@ def basicCommand(cp:CommandParser):
         pass
     return recmds
 
+def countParams(cmds:str):
+    fidx=cmds.find("{")
+    pcount=0
+    cmdl=len(cmds)
+    while fidx>=0:
+        if fidx==0 or cmds[fidx-1]!="{":
+            fidx+=1
+            if fidx<cmdl:
+                if cmds[fidx]=="}": #{}
+                    pcount+=1
+                elif cmds[fidx].isnumeric():
+                    fidx+=1
+                    if fidx<cmdl and cmds[fidx]=="}": #{%d}
+                        pcount+=1
+        fidx=cmds.find("{",fidx+1)
+    return pcount
+
 def fillParams(cmds:str,params):
+    pcount=countParams(cmds)
+    plen=len(params)
+    delta=pcount-plen
+    if delta>0:
+        params+=[""]*delta
     return cmds.format(*params)
 
 def processMessages(mobj):
@@ -36,8 +66,9 @@ def processMessages(mobj):
         tlist=text.split()
         conn=get_redis_connection()
         cmds=conn.hget("cmdmaps",tlist[0])
-        cmds=cmds.decode()
-        recmds=fillParams(cmds,tlist[1:])
+        if cmds:
+            cmds=cmds.decode()
+            recmds=fillParams(cmds,tlist[1:])
     return remsgs,recmds
 
 def loadAndCache():

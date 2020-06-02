@@ -126,8 +126,36 @@ function Box(name,content,boxobj) {
             }
         }
         //#endregion
-
         //#region msg
+        this.preIn=function (data) {
+            if(messager.ismobj(data)){
+                var istext=data["content"][0]["type"]=="t";
+                if(istext){
+                    data["content"][0]["value"]=messager.addPS(data["content"][0]["value"],this.prefix,this.suffix);
+                    if(data["content"].length==1 && data["content"][0]["value"]===""){
+                        return undefined;
+                    }
+                }
+                return data;
+            }
+            return undefined;
+        }
+        this.input=function (mobj) {
+            this.sendMsg(mobj);
+            if(mobj["type"]==1 && mobj["content"][0]["type"]=="t"){
+                var text=mobj["content"][0]["value"];
+                this.analyze(text);
+            }
+            return mobj;
+        }
+        this.preOut=function (mobj) {
+            var remobj=undefined;
+            if(mobj["type"]==0){
+                remobj={...mobj};
+                remobj["type"]=1;
+            }
+            return remobj;
+        }
         this.sendMsg=function (mobj) {
             if(mobj["type"]==-1){
                 box.text.firstElementChild.value=mobj["content"][0]["value"];
@@ -136,35 +164,38 @@ function Box(name,content,boxobj) {
             var html=messager.mobj2HTML(mobj);
             html.addEventListener("dragstart",this.onMsgDragStart);
             this.chat.appendChild(html);
-
-            var wsmsg=messager.getWsMsg("msg",mobj);
-            this.websocket.send(JSON.stringify(wsmsg));
-
             setTimeout(function () {
                 box.rollscroll(box.chat,box.chat.scrollHeight-box.chat.clientHeight,10);
             },20);
 
+            var wsmsg=messager.getWsMsg("msg",mobj);
+            this.websocket.sendJson(wsmsg);
+            /*
             var l=box.nextBoxes.length;
             if(l!=0 && mobj["type"]==0){
                 for(var i=0;i<l;i++){
                     box.nextBoxes[i].importSubmit(mobj);
                 }
-            }
+            }*/
         }
         this.clickSubmit=function () {
-            if(box.resizeMode){
+            if(this.settingMode || this.resizeMode){
                 return;
             }
-            var input=messager.addPS(box.text.firstElementChild.value,box.prefix,box.suffix);
-            if(input==""){
-                return;
-            }
-            box.text.firstElementChild.value="";
+            //var input=messager.addPS(box.text.firstElementChild.value,box.prefix,box.suffix);
+            //if(input==""){
+            //    return;
+            //}
+            var input=box.text.firstElementChild.value;
             var mobj=messager.textobj(input,1);
-            box.sendMsg(mobj);
-            box.analyze(input);
+            this.tryInput(mobj);
+
+            box.text.firstElementChild.value="";
+            //box.sendMsg(mobj);
+            //box.analyze(input);
         }
         this.text.lastElementChild.firstElementChild.addEventListener("click",this.clickSubmit);
+        /*
         this.importSubmit=function (mobj) {
             if(this.settingMode || this.resizeMode){
                 return;
@@ -178,7 +209,7 @@ function Box(name,content,boxobj) {
                 var result=mobj["content"][0]["value"];
                 this.analyze(result);
             }
-        }
+        }*/
         this.onMsgDragStart=function (event) {
             box.onDePress();
             var et=event.target;
@@ -199,7 +230,8 @@ function Box(name,content,boxobj) {
             var ejson=ed.getData("text");
             if(ejson!=""){
                 var mobj=messager.JSON2mobj(ejson);
-                box.sendMsg(mobj);
+                box.tryInput(mobj);
+                //box.sendMsg(mobj);
             }
             var efs=ed.files;
             if(efs!=undefined && efs.length!=0){
@@ -209,12 +241,13 @@ function Box(name,content,boxobj) {
                     fd.append(efs[i].name,efs[i]);
                     mobj.content.push(messager.file2msg(efs[i]));
                 }
-                box.sendMsg(mobj);
+                console.log(mobj);
+                box.tryInput(mobj);
+                //box.sendMsg(mobj);
             }
         }
         this.innercontent.addEventListener("dragover",this.onfileDrag);
         this.innercontent.addEventListener("drop",this.onfileDrop);
-        this.nextBoxes=[];
         this.prefix="";
         this.suffix="";
         this.analyze=function (text) {
@@ -223,7 +256,8 @@ function Box(name,content,boxobj) {
                 nodeals=this.processCommands(text);
                 if(nodeals.length>0){
                     //交给后端处理
-                    
+                    var wsmsg=messager.getWsMsg("cmd", nodeals.join("\n") );
+                    this.websocket.sendJson(wsmsg);
                 }
             }
         /*
@@ -372,14 +406,14 @@ function Box(name,content,boxobj) {
                 var received = JSON.parse(evt.data);
                 if (received["wsMsgType"]=="heartbeat"){
                     //console.log(box.boxName+" 收到了心跳");
-                    
                 }else if(received["wsMsgType"]=="msg"){
-                    box.sendMsg(received["wsMsg"]);
+                    //box.sendMsg(received["wsMsg"]);
+                    box.tryInput(received["wsMsg"]);
                     console.log(box.boxName+" 有消息了：");
                     console.log(received["wsMsg"]);
                 }else if(received["wsMsgType"]=="cmd"){
                     //收到指令，备用
-                    console.log(box.boxName+" 收到指令："+received["wsMsg"]);
+                    //console.log(box.boxName+" 收到指令："+received["wsMsg"]);
                     box.processCommands(received["wsMsg"]);
                 }
                 box.wsHeartBeatReset();
@@ -393,6 +427,9 @@ function Box(name,content,boxobj) {
                 console.log("连接异常");
                 clearInterval(box.websocket.heartbeat);
                 box.wsReconnect();
+            }
+            this.websocket.sendJson = function (wsmsg) {
+                box.websocket.send(JSON.stringify(wsmsg));
             }
         }
         this.wsReconnectLock=false;
@@ -455,6 +492,8 @@ function Box(name,content,boxobj) {
         }
         //#endregion
     }
+
+    this.nextBoxes=[];
 
     this.backendinit=function(){
         jdata={
@@ -686,6 +725,7 @@ Box.prototype.processCommands=function (cmds,extra) {
         var cmder=new Commander();
         if(cmder.getCommand( cmds[i] )){
             var handled=false;
+            console.log("处理指令："+cmds[i]);
             if(systemCommand.call(this,cmder)){
                 handled=true;
                 continue;
@@ -732,6 +772,18 @@ Box.prototype.basicCommand=function (cmder) {
             break;
     }
     return handled;
+}
+Box.prototype.commandsToBackend=function (cmds) {
+    if( cmds instanceof Array ){
+        cmds=cmds.join("\n");
+    }
+    var box=this;
+    $.post("/commands/",{commands:cmds}).done(
+        function(data) {
+            var recmds=data["commands"];
+            box.processCommands(recmds);
+        }
+    );
 }
 //#endregion
 //#region Box attributes
@@ -805,17 +857,35 @@ Box.prototype.boxObjUpdate=function(data){
 }
 //#endregion
 //#region Box input output
+Box.prototype.preIn=function(data){
+    return data;
+}
 Box.prototype.input=function(data){
-    if(this.check(data)){
-
-    }
+    console.log( this.boxName+"收到了:");
+    console.log(data);
+    return data;
+}
+Box.prototype.preOut=function (data) {
+    return data;
 }
 Box.prototype.output=function(data){
-
+    var l=this.nextBoxes.length;
+    for(var i=0;i<l;i++){
+        this.nextBoxes[i].tryInput(data);
+    }
 }
-Box.prototype.check=function(data){
-
+Box.prototype.tryInput=function (data) {
+    data=this.preIn(data);
+    var redata=undefined;
+    if(data){
+        redata=this.input(data);
+        redata=this.preOut(redata);
+        if(redata){
+            this.output(redata);
+        }
+    }
 }
+
 //#endregion
 
 //#region Box static
@@ -992,6 +1062,9 @@ Messager.prototype.addPS=function (text,p,s) {
 Messager.prototype.getWsMsg=function (type,msg) {
     var wsmsg={wsMsgType:type,wsMsg:msg};
     return wsmsg
+}
+Messager.prototype.ismobj=function (data) {
+    return data.hasOwnProperty("type") && data.hasOwnProperty("content") && data["content"] instanceof Array && data["content"].length!=0;
 }
 //#endregion
 
