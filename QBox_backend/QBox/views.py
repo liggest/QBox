@@ -176,14 +176,24 @@ def SaveorGetBoxObj(request):
     #print("进了SoG")
     if request.method == "POST":
         #print("进了POST")
-        userId = util.getUserKey(request)
-        name = request.POST.get("name",None) 
-        #print("nnnnname",name)
-        box = request.POST.get("data",None)
-        #print("bbbbox",box)
-        savetime = timezone.now()
-        userboxobj = UserBoxObj(userId = userId, name = name, box = box, savetime = savetime)
-        userboxobj.save()
+        userId = request.user.username
+        if userId:
+            name = request.POST.get("name",None) 
+            #print("nnnnname",name)
+            box = request.POST.get("data",None)
+            #print("bbbbox",box)
+            savetime = timezone.now()
+            oldbox = UserBoxObj.objects.values("box").filter(name = name,userId = userId).all()
+            if len(oldbox) == 0:
+                userboxobj = UserBoxObj(userId = userId, name = name, box = box, savetime = savetime)
+                userboxobj.save()
+            else:
+                userboxobj = UserBoxObj.objects.get(name = name,userId = userId)
+                userboxobj.box = box
+                userboxobj.savetime = savetime
+                userboxobj.save()
+        else:
+            return HttpResponse('please login')
         #boxx = UserBoxObj.objects.values("box").filter(name=name).last()
         #print("ggggetbox",boxx)
         #print("len(boxxxx)",len(boxx))

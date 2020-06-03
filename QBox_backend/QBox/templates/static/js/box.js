@@ -1297,7 +1297,7 @@ function systemCommand (cmder) {
                 name="latest";
             }
             var allBoxObj=JSON.stringify( boxLists.getAllBoxObj() );
-            $.post("/box/saveorget/",{name:name,data:allBoxObj})
+            $.post("/box/access/",{name:name,data:allBoxObj})
             break;
         case "wait":
             break;
