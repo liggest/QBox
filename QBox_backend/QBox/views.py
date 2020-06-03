@@ -172,11 +172,15 @@ def getWebSocket(request,bid):
 '''
 
 def SaveorGetBoxObj(request):
+    print("进了SoG")
     if request.method == "POST":
-        user = request.user
+        print("进了POST")
+        userId = util.getUserKey(request)
         name = request.POST.get("name",None) 
+        print("nnnnname",name)
         box = request.POST.get("data",None)
-        userboxobj = UserBoxObj(userId = user, name = name, box = box)
+        print("bbbbox",box)
+        userboxobj = UserBoxObj(userId = userId, name = name, box = box)
         userboxobj.save()
     if request.method == "GET":
         name = request.GET.get("name",None)
@@ -184,3 +188,4 @@ def SaveorGetBoxObj(request):
             box = UserBoxObj.objects.values("box").filter(name=name)
             return JsonResponse(box)
         return JsonResponse({})
+    return JsonResponse({})

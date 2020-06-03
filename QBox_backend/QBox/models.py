@@ -4,7 +4,7 @@ import jsonfield
 
 # Create your models here.
 class UserBoxObj(models.Model):
-    userId = models.OneToOneField(User,on_delete=models.CASCADE, related_name='boxobj')
+    userId = models.CharField("userid",max_length=100,blank=True)
     name = models.CharField("name", max_length=100, blank=True)
     #Django model不支持json文件的存入，查了好久，找到了这个东西
     box = jsonfield.JSONField()

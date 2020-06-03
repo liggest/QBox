@@ -1246,11 +1246,13 @@ function systemCommand (cmder) {
             alert(cmder.command["params"].join(" "));
             break;
         case "save":
+            cmder.parse()
             var name=cmder.command["params"].join(" ");
             if(name===""){
                 name="latest";
             }
             var allBoxObj=JSON.stringify( boxLists.getAllBoxObj() );
+            $.post("/box/saveorget/",{name:name,data:allBoxObj})
             break;
         case "wait":
             break;
