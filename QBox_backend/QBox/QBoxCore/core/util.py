@@ -14,6 +14,7 @@ btdict={
     "imgbox":"imagebox.html",
     "videobox":"videobox.html",
     "audiobox":"audiobox.html",
+    "orderbox":"orderbox.html",
     #"webbox":"chatbox.html",
 }
 
