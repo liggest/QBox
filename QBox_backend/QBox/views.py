@@ -5,6 +5,7 @@ from django.views import View
 from QBox_backend.settings import BASE_DIR
 from django.views.decorators.csrf import csrf_exempt
 import os
+from django.utils import timezone
 #import hmac
 #from datetime import datetime
 import json
@@ -172,20 +173,24 @@ def getWebSocket(request,bid):
 '''
 
 def SaveorGetBoxObj(request):
-    print("进了SoG")
+    #print("进了SoG")
     if request.method == "POST":
-        print("进了POST")
+        #print("进了POST")
         userId = util.getUserKey(request)
         name = request.POST.get("name",None) 
-        print("nnnnname",name)
+        #print("nnnnname",name)
         box = request.POST.get("data",None)
-        print("bbbbox",box)
-        userboxobj = UserBoxObj(userId = userId, name = name, box = box)
+        #print("bbbbox",box)
+        savetime = timezone.now()
+        userboxobj = UserBoxObj(userId = userId, name = name, box = box, savetime = savetime)
         userboxobj.save()
+        #boxx = UserBoxObj.objects.values("box").filter(name=name).last()
+        #print("ggggetbox",boxx)
+        #print("len(boxxxx)",len(boxx))
     if request.method == "GET":
         name = request.GET.get("name",None)
         if name:
-            box = UserBoxObj.objects.values("box").filter(name=name)
+            box = UserBoxObj.objects.values("box").filter(name=name).last()
             return JsonResponse(box)
         return JsonResponse({})
     return JsonResponse({})
