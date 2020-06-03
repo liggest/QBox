@@ -4,8 +4,8 @@ from django.http import HttpResponse,JsonResponse,HttpResponseNotModified,HttpRe
 from django.views import View
 from QBox_backend.settings import BASE_DIR
 from django.views.decorators.csrf import csrf_exempt
-import os
 from django.utils import timezone
+import os
 #import hmac
 #from datetime import datetime
 import json
@@ -171,7 +171,7 @@ def getWebSocket(request,bid):
 将json文件存入数据库，需要有两个参数，一个是uerId,这应该是一个user实例，用request.user应该就可以得到
 然后就是box，这个是用来存json文件的
 '''
-
+@csrf_exempt
 def SaveorGetBoxObj(request):
     #print("进了SoG")
     if request.method == "POST":

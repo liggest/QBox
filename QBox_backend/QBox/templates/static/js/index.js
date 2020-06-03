@@ -210,9 +210,14 @@ $.get("/box/init",{width:document.body.clientWidth,height:document.body.clientHe
 
 window.onbeforeunload=function () {
     var url = location.href+"box/exit/";
+    //var saveurl = location.href+;
     //console.log(url);
     if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
         navigator.sendBeacon(url);
+        var fd=new FormData();
+        fd.append("name","autosave");
+        fd.append("data",JSON.stringify( boxLists.getAllBoxObj() ));
+        navigator.sendBeacon("/box/saveorget/",fd);
         //这个↑是新技术，caniuse网上说，约94%的用户的浏览器支持这个
     }
     //return "12345";
