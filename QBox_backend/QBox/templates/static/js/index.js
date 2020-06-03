@@ -194,30 +194,81 @@ var resizebox=getResizeTemplate(); //待换成与后端通信的版本？
 var rboxTemplate=resizebox.cloneNode(true);
 var currentFocus=undefined;
 
-//这里是网页初始化 请求成功了才能生成框
-$.get("/box/init",{width:document.body.clientWidth,height:document.body.clientHeight}).done(
-    function(data) {
-        var boxobj=data
-        var mainBox=new Box("主体",mainbox,boxobj);
-        mainBox.init(container,boxLists,dragger);
-        currentFocus=mainBox;
+$.get("/accounts/islogin/").done(function(data){ 
+    if(data["islogin"]){
+        if(confirm("检测到您已登录\n是否尝试从后端恢复框？")){
+            load();
+        }else{
+            boxinit();
+        }
+    }else{
+        boxinit();
     }
-).fail(
-    function (xhr, status) {
-        alert("网页初始化失败！请检查网络连接…");
+});
+
+function boxinit() {
+    //这里是网页初始化 请求成功了才能生成框
+    $.get("/box/init",{width:document.body.clientWidth,height:document.body.clientHeight}).done(
+        function(data) {
+            var boxobj=data
+            var mainBox=new Box("主体",mainbox,boxobj);
+            mainBox.init(container,boxLists,dragger);
+            currentFocus=mainBox;
+        }
+    ).fail(
+        function (xhr, status) {
+            alert("网页初始化失败！请检查网络连接…");
+        }
+    );
+}
+
+function load(clear) {
+    if(clear){
+        while(boxLists.length>0){
+            boxLists[0].selfDestroy();
+        }
     }
-);
+    $.ajax({
+        type: 'GET',
+        url: "/box/access/",
+        cache: false,
+        data:{name:"latest"},
+        xhr: function () {
+            var xhr = new window.XMLHttpRequest();
+            xhr.addEventListener("progress", function (event) {
+
+            }, false);
+            return xhr;
+        },
+        success: function (data) {
+            console.log("加载完成!");
+            var boxobjs=JSON.parse(data["box"]);
+            var loadloop=setInterval(function () {
+                if(boxobjs.length>0){
+                    new Box(undefined,boxTemplate.cloneNode(true),boxobjs[0]).init(container,boxLists,dragger);
+                    boxobjs.splice(0,1);
+                }else{
+                    clearInterval(loadloop);
+                }
+            },1200);
+        }
+    });    
+}
 
 window.onbeforeunload=function () {
-    var url = location.href+"box/exit/";
+    //var url = location.href+;
     //var saveurl = location.href+;
     //console.log(url);
     if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-        navigator.sendBeacon(url);
-        var fd=new FormData();
-        fd.append("name","autosave");
-        fd.append("data",JSON.stringify( boxLists.getAllBoxObj() ));
-        navigator.sendBeacon("/box/saveorget/",fd);
+        if(this.boxLists.length>0){
+            var fd=new FormData();
+            fd.append("name","latest");
+            fd.append("data",JSON.stringify( boxLists.getAllBoxObj() ));
+            navigator.sendBeacon("/box/exit/",fd);
+        }else{
+            navigator.sendBeacon("/box/exit/");
+        }
+        //navigator.sendBeacon("/box/access/");
         //这个↑是新技术，caniuse网上说，约94%的用户的浏览器支持这个
     }
     //return "12345";

@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from .models import UserProfile
 from django.contrib import auth
 from .forms import RegistrationForm, LoginForm
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect,JsonResponse
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.clickjacking import xframe_options_sameorigin
@@ -63,3 +63,9 @@ def logout(request):
     form = LoginForm()
     return render(request, 'login.html', {'form': form})
     #return HttpResponseRedirect("/")
+
+
+def islogin(request):
+    if request.user.is_authenticated:
+        return JsonResponse({"islogin":True})
+    return JsonResponse({"islogin":False})

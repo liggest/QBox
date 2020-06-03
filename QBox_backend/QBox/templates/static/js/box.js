@@ -78,9 +78,10 @@ function Box(name,content,boxobj) {
         //#region init
         //this.title=this.midcontent.firstElementChild;
         //this.title.innerText=this.boxName;
-        this.innercontent=this.midcontent.lastElementChild;        
+        this.innercontent=this.midcontent.lastElementChild;
         this.chat=this.innercontent.firstElementChild;
         this.text=this.chat.nextElementSibling;
+        //this.text=this.chat.nextElementSibling;
         //#endregion
         //#region changeResize
         /*var oldresizeBegin=this.resizeBegin;
@@ -682,9 +683,7 @@ function Box(name,content,boxobj) {
                 box.longPress();
             }
         },longPressInterval);
-        if(currentFocus!=undefined){
-            currentFocus=box;
-        }
+        currentFocus=box;
     }
     this.onDePress=function () {
         if(box.pressed){
@@ -899,7 +898,7 @@ Box.prototype.boxObjUpdate=function(data){
     childrens=this.midcontent.children;
     cl=childrens.length;
     for(var i=1;i<cl;i++){
-        bhtml+=childrens[i].innerHTML;
+        bhtml+=childrens[i].outerHTML;
     }
     this.boxObj["boxhtml"]=bhtml;
     if(data){

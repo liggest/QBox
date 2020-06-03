@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.db import models
-from django.http import HttpResponse,JsonResponse,HttpResponseNotModified,HttpResponseNotAllowed
+from django.http import HttpResponse,JsonResponse,HttpResponseNotModified,HttpResponseNotAllowed,StreamingHttpResponse
 from django.views import View
 from QBox_backend.settings import BASE_DIR
 from django.views.decorators.csrf import csrf_exempt
@@ -78,11 +78,7 @@ def getInnerBox(request):
 def userExit(request):
     if request.method=="POST": #Bacon需要使用POST方法
         if request.user.is_authenticated:
-            #应该做点啥
-            pass
-        #测试了一下能不能存json，好像是可以的
-        #test = UserBoxObj(userId=request.user,name='axx',box={"name":"allaa"})
-        #test.save()
+            SaveorGetBoxObj(request)
         qbcore.deleteUser(request)
         print("处理",util.getUserKey(request),"的后事")
     return HttpResponse("")
@@ -181,6 +177,9 @@ def SaveorGetBoxObj(request):
             name = request.POST.get("name",None) 
             #print("nnnnname",name)
             box = request.POST.get("data",None)
+            if not (name and box):
+                print("情报不足，未能保存%s的备份"%userId)
+                return JsonResponse({"success":False})
             #print("bbbbox",box)
             savetime = timezone.now()
             oldbox = UserBoxObj.objects.values("box").filter(name = name,userId = userId).all()
@@ -192,15 +191,24 @@ def SaveorGetBoxObj(request):
                 userboxobj.box = box
                 userboxobj.savetime = savetime
                 userboxobj.save()
+            print("保存了%s的备份：%s"%(userId,name))
+            return JsonResponse({"success":True})
         else:
-            return HttpResponse('please login')
+            return JsonResponse({"success":False})
         #boxx = UserBoxObj.objects.values("box").filter(name=name).last()
         #print("ggggetbox",boxx)
         #print("len(boxxxx)",len(boxx))
     if request.method == "GET":
         name = request.GET.get("name",None)
         if name:
-            box = UserBoxObj.objects.values("box").filter(name=name).last()
-            return JsonResponse(box)
+            boxtext = UserBoxObj.objects.values("box").filter(name=name).last()
+            #boxes=json.loads( boxtext["box"] )
+            #print(boxes)
+            return JsonResponse(boxtext)
         return JsonResponse({})
     return JsonResponse({})
+
+
+def boxGenerator(boxes):
+    for box in boxes:
+        yield box
