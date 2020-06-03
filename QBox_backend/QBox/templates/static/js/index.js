@@ -178,7 +178,7 @@ $.ajaxSetup({  //为csrfmethods添加csrf头
             if(csrfupdate){
                 csrftoken=getCookie('csrftoken');
                 csrfupdate=false;
-                console.log("csrfupdate");
+                //console.log("csrfupdate");
             }
             xhr.setRequestHeader("X-CSRFToken", csrftoken);
         }
@@ -196,7 +196,7 @@ var currentFocus=undefined;
 
 $.get("/accounts/islogin/").done(function(data){ 
     if(data["islogin"]){
-        if(confirm("检测到您已登录\n是否尝试从后端恢复框？")){
+        if(confirm("检测到您已登录\n是否尝试从最近的备份恢复框？")){
             load();
         }else{
             boxinit();
@@ -222,17 +222,20 @@ function boxinit() {
     );
 }
 
-function load(clear) {
+function load(name,clear) {
     if(clear){
         while(boxLists.length>0){
             boxLists[0].selfDestroy();
         }
     }
+    if(!name){
+        name="latest";
+    }
     $.ajax({
         type: 'GET',
         url: "/box/access/",
         cache: false,
-        data:{name:"latest"},
+        data:{name:name},
         xhr: function () {
             var xhr = new window.XMLHttpRequest();
             xhr.addEventListener("progress", function (event) {
@@ -242,15 +245,19 @@ function load(clear) {
         },
         success: function (data) {
             console.log("加载完成!");
-            var boxobjs=JSON.parse(data["box"]);
-            var loadloop=setInterval(function () {
-                if(boxobjs.length>0){
-                    new Box(undefined,boxTemplate.cloneNode(true),boxobjs[0]).init(container,boxLists,dragger);
-                    boxobjs.splice(0,1);
-                }else{
-                    clearInterval(loadloop);
-                }
-            },1200);
+            if(data["box"]){
+                var boxobjs=JSON.parse(data["box"]);
+                var loadloop=setInterval(function () {
+                    if(boxobjs.length>0){
+                        new Box(undefined,boxTemplate.cloneNode(true),boxobjs[0]).init(container,boxLists,dragger);
+                        boxobjs.splice(0,1);
+                    }else{
+                        clearInterval(loadloop);
+                    }
+                },1200);
+            }else{
+                boxinit();
+            }
         }
     });    
 }

@@ -38,12 +38,11 @@ class WsConsumer(AsyncJsonWebsocketConsumer):
  
     async def receive_json(self,content):
         if content["wsMsgType"]=="msg":
-            print("来自",self.box.name,"的消息：")
             mobj=content["wsMsg"]
-            print(mobj)
+            print("来自",self.box.name,"的消息：",mobj)
             remsgs,cmds=response.processMessages(mobj)
             if cmds!="":
-                recmds=response.processCommands(cmds,nodeals=True)
+                recmds=await response.processCommands(cmds,nodeals=True)
                 await self.send_json(messager.getWsMessage(recmds,"cmd"))
             for text in remsgs:
                 await self.send_json(messager.getWsMessage( messager.getMsg( messager.getTextContent(text) ) ))
@@ -64,7 +63,7 @@ class WsConsumer(AsyncJsonWebsocketConsumer):
             await self.send_json(content)
 
         elif content["wsMsgType"]=="cmd":
-            recmds=response.processCommands(content["wsMsg"])
+            recmds=await response.processCommands(content["wsMsg"])
             if recmds!="":
                 await self.send_json(messager.getWsMessage(recmds,"cmd"))
             pass #收到了指令

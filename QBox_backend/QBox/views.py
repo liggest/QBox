@@ -14,10 +14,12 @@ from asgiref.sync import async_to_sync
 from .QBoxCore.Box import Box,boxdata
 from .QBoxCore.core import core,util
 from .QBoxCore.quser import quser
-from .QBoxCore.message import messager,commandParser,response
+from .QBoxCore.message import messager,commandParser
 from .models import UserBoxObj
 
 qbcore=core.core()
+
+from .QBoxCore.message import response
 
 
 # Create your views here.
@@ -145,7 +147,7 @@ class CommandView(View):
         cmds=request.POST.get("commands","")
         recmds={"commands":""}
         if commandParser.CommandParser.isCommand(cmds):
-            recmds["commands"]=response.processCommands(cmds)
+            recmds["commands"]= async_to_sync(response.processCommands) (cmds)
         return JsonResponse(recmds)
 
 '''
@@ -194,7 +196,7 @@ def SaveorGetBoxObj(request):
             print("保存了%s的备份：%s"%(userId,name))
             return JsonResponse({"success":True})
         else:
-            return JsonResponse({"success":False})
+            return JsonResponse({"success":False,"reason":"请先登录"})
         #boxx = UserBoxObj.objects.values("box").filter(name=name).last()
         #print("ggggetbox",boxx)
         #print("len(boxxxx)",len(boxx))

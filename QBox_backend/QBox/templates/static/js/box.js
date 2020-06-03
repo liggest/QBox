@@ -180,7 +180,7 @@ function Box(name,content,boxobj) {
             }*/
         }
         this.clickSubmit=function () {
-            if(this.settingMode || this.resizeMode){
+            if(box.settingMode || box.resizeMode){
                 return;
             }
             //var input=messager.addPS(box.text.firstElementChild.value,box.prefix,box.suffix);
@@ -189,7 +189,7 @@ function Box(name,content,boxobj) {
             //}
             var input=box.text.firstElementChild.value;
             var mobj=messager.textobj(input,1);
-            this.tryInput(mobj);
+            box.tryInput(mobj);
 
             box.text.firstElementChild.value="";
             //box.sendMsg(mobj);
@@ -212,6 +212,8 @@ function Box(name,content,boxobj) {
             }
         }*/
         this.onMsgDragStart=function (event) {
+            //event.preventDefault();
+            //event.stopPropagation();
             box.onDePress();
             var et=event.target;
             var mobj;
@@ -383,6 +385,13 @@ function Box(name,content,boxobj) {
             this.suffix="";
             this.nextBoxes.splice(0,this.nextBoxes.length);
         }
+        this.msgsinit=function () {
+            var msgs=this.chat.getElementsByClassName("messagebox");
+            var ml=msgs.length;
+            for(var i=0;i<ml;i++){
+                msgs[i].addEventListener("dragstart",this.onMsgDragStart);
+            }
+        }
         //#endregion
         //#region websocket
         this.websocket=undefined;
@@ -484,6 +493,37 @@ function Box(name,content,boxobj) {
             });
         }
         //#endregion
+        //#region command
+        var oldbasicCommand=this.basicCommand;
+        this.basicCommand=function (cmder) {
+            var handled=true;
+            switch(cmder.command["command"]){
+                case "aaa":
+                    cmder.parse();
+                    break;
+                case "refresh":
+                    this.refresh();
+                    break;
+                case "send":
+                    cmder.opt(["-box","-b"],0).opt("-user",0).opt(["-qq","-group"],0).parse();
+                    if(cmder.command["box"] || cmder.command["b"] || cmder.command["user"] || cmder.command["qq"] || cmder.command["group"]){
+                        handled=false;
+                    }else{
+                        var text=cmder.getParams();
+                        this.tryInput( messager.textobj(text,0) );
+                    }
+                    break;
+                default:
+                    handled=false;
+                    break;
+            }
+            if(!handled){
+                handled=oldbasicCommand.call(this,cmder);
+            }
+            return handled;
+        }
+        //#endregion
+        
         //#region others
         var oldSelfDestroy=this.selfDestroy;
         this.selfDestroy=function () {
@@ -512,6 +552,8 @@ function Box(name,content,boxobj) {
             }
         }
         //#endregion
+        
+        this.msgsinit();
     }
 
     this.nextBoxes=[];
@@ -807,7 +849,8 @@ Box.prototype.basicCommand=function (cmder) {
             if(typeof data=="string"){
                 data=JSON.parse(data);
             }else if(data instanceof Array){
-                data=JSON.parse( data.join(" ") );
+                data=data.join(" ");
+                data=JSON.parse( data||"{}" );
             }
             if(name){
                 if(name instanceof Array){
@@ -1284,6 +1327,7 @@ Commander.prototype.parse=function (s) {
                         else{
                             this.command[opt]=true;
                         }
+                        break;
                     }
                 }
             }else{
@@ -1300,6 +1344,7 @@ Commander.prototype.parse=function (s) {
                             this.command[opt]=con[0];
                             con=con.slice(1);
                         }
+                        break;
                     }
                 }
             }
@@ -1315,6 +1360,23 @@ Commander.prototype.getParams=function(){
 }
 //#endregion
 
+//#region System
+function sendOrAlert(text) {
+    if(!trySend( messager.textobj(text,0) )){
+        alert(text);
+    }
+}
+
+
+function trySend(mobj) {
+    var chatbox=boxLists.getFirstChat();
+    if(chatbox){
+        chatbox.tryInput(mobj);
+        return true;
+    }
+    return false;
+}
+
 function systemCommand (cmder) {
     var handled=true;
     switch(cmder.command["command"]){
@@ -1329,7 +1391,12 @@ function systemCommand (cmder) {
             //console.log("快要登录了！");
             break;
         case "refresh":
-            location.href=location.href;
+            cmder.opt(["-box","-b"],0).parse();
+            if(cmder.command["box"] || cmder.command["b"]){
+                handled=false;
+            }else{
+                location.href=location.href;
+            }
             break;
         case "alert":
             cmder.parse();
@@ -1342,7 +1409,41 @@ function systemCommand (cmder) {
                 name="latest";
             }
             var allBoxObj=JSON.stringify( boxLists.getAllBoxObj() );
-            $.post("/box/access/",{name:name,data:allBoxObj})
+            $.post("/box/access/",{name:name,data:allBoxObj}).done(function (data) {
+                if(data["success"]){
+                    var hint="保存成功~";
+                    sendOrAlert(hint);
+                }else{
+                    var hint="保存失败...";
+                    if(data["reason"]){
+                        hint+="\n"+data["reason"];
+                    }
+                    sendOrAlert(hint);
+                }
+            })
+            break;
+        case "load":
+            cmder.parse();
+            var name=cmder.command["params"].join(" ");
+            if(name===""){
+                name="latest";
+            }
+            load(name,true);
+            break;
+        case "send":
+            cmder.opt(["-box","-b"],1).parse();
+            var name=cmder.command["box"] || cmder.command["b"];
+            if(name){
+                var box=boxLists.findBoxByName(name);
+                if(box){
+                    var text=cmder.getParams();
+                    box.tryInput(messager.textobj(text,0));
+                }else{
+                    sendOrAlert("没找到那个框..");
+                }
+            }else{
+                handled=false;
+            }
             break;
         case "wait":
             break;
@@ -1352,6 +1453,7 @@ function systemCommand (cmder) {
     }
     return handled;
 }
+//#endregion
 
 /*
 function Rect(left,top,width,height) {

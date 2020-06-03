@@ -48,3 +48,11 @@ class quser():
             return True
         return False
 
+    async def trySendAsync(self,text):
+        wsbox=self.getChatBox(checkws=True)
+        if wsbox:
+            mobj=messager.getMsg( messager.getTextContent(text) )
+            await wsbox.websocket.send_json(messager.getWsMessage(mobj))
+            return True
+        return False
+

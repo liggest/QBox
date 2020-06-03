@@ -52,3 +52,13 @@ Array.prototype.getAllBoxObj=function () {
     }
     return data;
 }
+
+Array.prototype.getFirstChat=function () {
+    var l=this.length;
+    for(var i=0;i<l;i++){
+        if(this[i].boxObj["boxtype"]==="chatbox"){
+            return this[i];
+        }
+    }
+    return undefined;
+}

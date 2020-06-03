@@ -62,6 +62,7 @@ class CommandParser():
         self.longspecial=[]
         #self.special=[]
         self.cons=[]
+        self.raw=""
 
     def __getitem__(self,key):
         return self.command.get(key,None)
@@ -104,6 +105,7 @@ class CommandParser():
             self.cons=t.strip().split()
             self.command["type"]=self.cons[0][0]
             self.command["command"]=self.cons[0][1:]
+            self.raw=t
             if self.command["command"]=="":
                 return False
         return r
@@ -141,6 +143,7 @@ class CommandParser():
                                     self.command[opt]=True
                             else:
                                 self.command[opt]=True
+                            break
                 else:
                     for ss in self.shortspecial:
                         if ss.isMatch(con[0]):
@@ -152,6 +155,7 @@ class CommandParser():
                             else:
                                 self.command[opt]=con[0]
                                 con=con[1:]
+                            break
                 if not matched:
                     self.command["params"].append(con[0])
                     con=con[1:]
@@ -204,11 +208,13 @@ if __name__=="__main__":
     cp=CommandParser()
     #cmd="！login 1313123 -a -z -s 888 --c 12 13 -x"
     cmd=".cmd param1 param2 -s1 -s2 s2val --l lval1 lval2 lval3"
+    #cmd=".send aaa -box2"
     if cp.getCommand(cmd):
         #print(cp.separateCommand("lo"))
         #print(cp.separateCommand("logi"))
         #cp.opt(["-z","-a"],2).opt("--c",1).parse()
         cp.opt("-s1",2).opt("-s2",1).opt("--l",1).parse()
+        #cp.opt(["-box","-b"],0).opt("-user",0).opt(["-qq","-group"],0).parse()
         print(cp.command)
     else:
         print("不是命令")

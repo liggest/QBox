@@ -5,7 +5,11 @@ from django.core.cache import cache
 from django_redis import get_redis_connection
 import pickle
 
-def processCommands(cmds,nodeals=False):
+import requests
+
+from QBox.views import qbcore
+
+async def processCommands(cmds,nodeals=False):
     cmds=cmds.split("\n")
     recmds=[]
     nodeals=[]
@@ -13,23 +17,45 @@ def processCommands(cmds,nodeals=False):
         cp=CommandParser()
         if cp.getCommand(cmd):
             print("处理指令：",cmd)
-            result=basicCommand(cp)
+            result,handled=await basicCommand(cp)
             if result:
                 recmds+=result
-            else:
+            if not handled:
                 nodeals.append(cmd)
     if nodeals:
         return "\n".join(nodeals+recmds)
     return "\n".join(recmds)
 
-def basicCommand(cp:CommandParser):
+async def basicCommand(cp:CommandParser):
     cmd=cp.command["command"]
     recmds=[]
-    if cmd=="":
-        pass
+    handled=True
+    if cmd=="send":
+        cp.opt("-user",1).opt(["-qq","-group"],1).parse()
+        user=cp.command.get("user",None)
+        qq=cp.command.get("qq",None)
+        group=cp.command.get("group",None)
+        if not user and not (qq or group):
+            #recmds.append(cp.raw)
+            handled=False
+        else:
+            text=cp.getParams()
+            if user:
+                quser=qbcore.getUserFromID(user)
+                if quser:
+                    if await quser.trySendAsync(text):
+                        recmds.append(".send 发送成功")
+                    else:
+                        recmds.append(".send 发送失败…")
+            if qq:
+                sendQQ(text,qq,"user")
+            if group:
+                sendQQ(text,group,"group")
     elif cmd in ["a","b","c"]:
         pass
-    return recmds
+    else:
+        handled=False
+    return recmds,handled
 
 def countParams(cmds:str):
     fidx=cmds.find("{")
@@ -54,7 +80,7 @@ def fillParams(cmds:str,params):
     delta=pcount-plen
     if delta>0:
         params+=[""]*delta
-    return cmds.format(*params)
+    return (cmds.format(*params)).strip()
 
 def processMessages(mobj):
     remsgs=[]
@@ -70,6 +96,14 @@ def processMessages(mobj):
             cmds=cmds.decode()
             recmds=fillParams(cmds,tlist[1:])
     return remsgs,recmds
+
+def sendQQ(text,qq,mtype):
+    header_dict = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko',"Content-Type": "application/json"}
+    params = {"message":text}
+    params[mtype+"_id"]=qq
+    url=r"http://47.94.214.137:5700/send_msg"
+    return requests.get(url,params=params)
+
 
 def loadAndCache():
     '''
