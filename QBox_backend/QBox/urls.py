@@ -12,6 +12,6 @@ urlpatterns = [
     path("exit/",views.userExit),
     path("status/",views.getStatus),
     path("test/",views.test),
-    path("saveorget/",views.SaveorGetBoxObj)
+    path("access/",views.SaveorGetBoxObj)
     #path("ws/<int:bid>/",views.getWebSocket),
 ]
