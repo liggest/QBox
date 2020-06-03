@@ -763,7 +763,17 @@ Box.prototype.processCommands=function (cmds,extra) {
 Box.prototype.basicCommand=function (cmder) {
     var handled=true;
     switch(cmder.command["command"]){
-        case "aaa":
+        case "connect":
+        case "disconnect":
+            cmder.opt("-name",1).opt("-id",1).parse();
+            var params=cmder.getParams();
+            var name=cmder.command["name"]||params;
+            var id=Number(cmder.command["id"])||undefined;
+            if(cmder.command["command"]==="connect"){
+                this.connect(name,id);
+            }else if(cmder.command["command"]==="disconnect"){
+                this.disconnect(name,id);
+            }
             break;
         case "bbb":
             break;
@@ -868,10 +878,14 @@ Box.prototype.input=function(data){
 Box.prototype.preOut=function (data) {
     return data;
 }
-Box.prototype.output=function(data){
-    var l=this.nextBoxes.length;
+Box.prototype.output=function(data,nexts){
+    if(!(nexts instanceof Array) ){
+        nexts=undefined;
+    }
+    nexts=nexts||this.nextBoxes;
+    var l=nexts.length;
     for(var i=0;i<l;i++){
-        this.nextBoxes[i].tryInput(data);
+        nexts[i].tryInput(data);
     }
 }
 Box.prototype.tryInput=function (data) {
@@ -885,16 +899,45 @@ Box.prototype.tryInput=function (data) {
         }
     }
 }
-
+Box.prototype.connect=function (name,id) {
+    var nb=undefined;
+    if(id){
+        nb=this.boxList.findBoxByNum(id);
+    }else{
+        nb=this.boxList.findBoxByName(name);
+    }
+    if(nb){
+        this.nextBoxes.push(nb);
+        return true;
+    }else{
+        return false;
+    }
+}
+Box.prototype.disconnect=function (name,id) {
+    var nbi=-1;
+    if(id){
+        nbi=this.nextBoxes.findBoxIdxByNum(id);
+    }else{
+        nbi=this.nextBoxes.findBoxIdxByName(name);
+    }
+    if(nbi>=0){
+        this.nextBoxes.removeAt(nbi);
+        return true;
+    }else{
+        return false;
+    }
+}
 //#endregion
 
 //#region Box static
 Box.prototype.newBox=function(boxtype,data){
     $.get("/box/templates",{boxtype:boxtype, data:JSON.stringify(data||{}),width:document.body.clientWidth,height:document.body.clientHeight}).done(
         function(bdata) {
-            var boxobj=bdata;
-            var nbName=boxobj["boxName"];
-            new Box(nbName,boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
+            if(bdata.hasOwnProperty("boxtype")){
+                var boxobj=bdata;
+                var nbName=boxobj["boxName"];
+                new Box(nbName,boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
+            }
         }
     );
 }
@@ -1231,10 +1274,12 @@ function systemCommand (cmder) {
     var handled=true;
     switch(cmder.command["command"]){
         case "user":
-            cmder.parse()
+            cmder.parse();
             params=cmder.getParams();
-            if(params==="login" || params==="logout"){
+            if(params==="login" || params==="logout" || params===""){
                 Box.prototype.newBox("login",{});
+            }else if(params==="register"){
+                Box.prototype.newBox("register",{});
             }
             console.log("快要登录了！");
             break;
@@ -1242,10 +1287,11 @@ function systemCommand (cmder) {
             location.href=location.href;
             break;
         case "alert":
-            cmder.parse()
+            cmder.parse();
             alert(cmder.command["params"].join(" "));
             break;
         case "save":
+            cmder.parse();
             var name=cmder.command["params"].join(" ");
             if(name===""){
                 name="latest";

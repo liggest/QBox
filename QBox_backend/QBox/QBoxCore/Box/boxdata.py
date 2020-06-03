@@ -4,11 +4,14 @@ import json
 
 
 def updateByDefault(boxtype,data):
-    if boxtype=="login":
-        boxtype="webpagebox"
-        data.setdefault("src","/accounts/login/")
-        data.setdefault("boxName","登录框")
+    if boxtype=="login" or boxtype=="register":
+        data.setdefault("src","/accounts/%s/"%boxtype)
+        if boxtype=="login":
+            data.setdefault("boxName","登录框")
+        elif boxtype=="register":
+            data.setdefault("boxName","注册框")
         data.setdefault("size",(285,340))
+        boxtype="webpagebox"
     return boxtype,data
 
 def isInt(ckdata):

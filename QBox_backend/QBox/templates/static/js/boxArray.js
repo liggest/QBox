@@ -2,7 +2,7 @@
 Array.prototype.findBoxByName=function(name){
     var l=this.length;
     for(var i=0;i<l;i++){
-        if(this[i].boxName==name){
+        if(this[i].boxName===name){
             return this[i];
         }
     }
@@ -12,7 +12,7 @@ Array.prototype.findBoxByName=function(name){
 Array.prototype.findBoxIdxByName=function (name) {
     var l=this.length;
     for(var i=0;i<l;i++){
-        if(this[i].boxName==name){
+        if(this[i].boxName===name){
             return i;
         }
     }
