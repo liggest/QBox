@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.db import models
 from django.http import HttpResponse,JsonResponse,HttpResponseNotModified,HttpResponseNotAllowed
 from django.views import View
 from QBox_backend.settings import BASE_DIR
@@ -79,7 +80,7 @@ def userExit(request):
             #应该做点啥
             pass
         #测试了一下能不能存json，好像是可以的
-        #test = UserBoxObj(userId=request.user,box={ "name":"John" })
+        #test = UserBoxObj(userId=request.user,name='axx',box={"name":"allaa"})
         #test.save()
         qbcore.deleteUser(request)
         print("处理",util.getUserKey(request),"的后事")
@@ -164,8 +165,22 @@ def getWebSocket(request,bid):
                 ws.websocket=request.websocket
 '''
 
-#def SaveBoxObj(request):
+
 '''
 将json文件存入数据库，需要有两个参数，一个是uerId,这应该是一个user实例，用request.user应该就可以得到
 然后就是box，这个是用来存json文件的
 '''
+
+def SaveorGetBoxObj(request):
+    if request.method == "POST":
+        user = request.user
+        name = request.POST.get("name",None) 
+        box = request.POST.get("data",None)
+        userboxobj = UserBoxObj(userId = user, name = name, box = box)
+        userboxobj.save()
+    if request.method == "GET":
+        name = request.GET.get("name",None)
+        if name:
+            box = UserBoxObj.objects.values("box").filter(name=name)
+            return JsonResponse(box)
+        return JsonResponse({})
