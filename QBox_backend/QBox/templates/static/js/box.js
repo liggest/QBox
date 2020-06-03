@@ -490,6 +490,26 @@ function Box(name,content,boxobj) {
             this.wsDisconnect();
             oldSelfDestroy.apply(this);
         }
+        var oldconnect=this.connect;
+        this.connect=function (name,id) {
+            if( oldconnect.call(this,name,id) ){
+                var mobj=messager.textobj("连接成功！",0);
+                this.tryInput(mobj,true);
+            }else{
+                var mobj=messager.textobj("连接失败…哪里出错了呢…",0);
+                this.tryInput(mobj,true);
+            }
+        }
+        var olddisconnect=this.disconnect;
+        this.disconnect=function (name,id) {
+            if( olddisconnect.call(this,name,id) ){
+                var mobj=messager.textobj("断开成功！",0);
+                this.tryInput(mobj,true);
+            }else{
+                var mobj=messager.textobj("断开失败…哪里出错了呢…",0);
+                this.tryInput(mobj,true);
+            }
+        }
         //#endregion
     }
 
@@ -775,7 +795,28 @@ Box.prototype.basicCommand=function (cmder) {
                 this.disconnect(name,id);
             }
             break;
-        case "bbb":
+        case "newbox":
+            cmder.opt(["-name","--name"],1).opt("-boxtype",1).opt(["-data","--data"],1).parse();
+            var params=cmder.command["params"];
+            var name=cmder.command["name"]||params[0];
+            var boxtype=cmder.command["boxtype"]||params[1];
+            var data=cmder.command["data"]||{};
+            if(!boxtype){
+                boxtype="chatbox";
+            }
+            console.log(boxtype);
+            if(typeof data=="string"){
+                data=JSON.parse(data);
+            }else if(data instanceof Array){
+                data=JSON.parse( data.join(" ") );
+            }
+            if(name){
+                if(name instanceof Array){
+                    name=name.join(" ");
+                }
+                data["boxName"]=name;
+            }
+            this.newBox(boxtype,data);
             break;
         default:
             handled=false;
@@ -888,14 +929,16 @@ Box.prototype.output=function(data,nexts){
         nexts[i].tryInput(data);
     }
 }
-Box.prototype.tryInput=function (data) {
+Box.prototype.tryInput=function (data,noOut) {
     data=this.preIn(data);
     var redata=undefined;
     if(data){
         redata=this.input(data);
-        redata=this.preOut(redata);
-        if(redata){
-            this.output(redata);
+        if(!noOut){
+            redata=this.preOut(redata);
+            if(redata){
+                this.output(redata);
+            }
         }
     }
 }
@@ -931,15 +974,18 @@ Box.prototype.disconnect=function (name,id) {
 
 //#region Box static
 Box.prototype.newBox=function(boxtype,data){
-    $.get("/box/templates",{boxtype:boxtype, data:JSON.stringify(data||{}),width:document.body.clientWidth,height:document.body.clientHeight}).done(
+    var xhr = $.get("/box/templates",{boxtype:boxtype, data:JSON.stringify(data||{}),width:document.body.clientWidth,height:document.body.clientHeight}).done(
         function(bdata) {
             if(bdata.hasOwnProperty("boxtype")){
                 var boxobj=bdata;
                 var nbName=boxobj["boxName"];
                 new Box(nbName,boxTemplate.cloneNode(true),boxobj).init(container,boxLists,dragger);
+            }else{
+                console.log("创建框失败！");
             }
         }
     );
+    return xhr;
 }
 //#endregion
 
@@ -1281,7 +1327,7 @@ function systemCommand (cmder) {
             }else if(params==="register"){
                 Box.prototype.newBox("register",{});
             }
-            console.log("快要登录了！");
+            //console.log("快要登录了！");
             break;
         case "refresh":
             location.href=location.href;

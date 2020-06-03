@@ -10,7 +10,8 @@ from django.conf import settings
 #boxtype转文件名
 btdict={
     "chatbox":"chatbox.html",
-    "webpagebox":"webpagebox.html"
+    "webpagebox":"webpagebox.html",
+    "imgbox":"imagebox.html"
     #"webbox":"chatbox.html",
 }
 
