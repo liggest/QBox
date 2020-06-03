@@ -1,9 +1,11 @@
 from django.shortcuts import render
+from django.db import models
 from django.http import HttpResponse,JsonResponse,HttpResponseNotModified,HttpResponseNotAllowed
 from django.views import View
 from QBox_backend.settings import BASE_DIR
 from django.views.decorators.csrf import csrf_exempt
 import os
+from django.utils import timezone
 #import hmac
 #from datetime import datetime
 import json
@@ -79,7 +81,7 @@ def userExit(request):
             #应该做点啥
             pass
         #测试了一下能不能存json，好像是可以的
-        #test = UserBoxObj(userId=request.user,box={ "name":"John" })
+        #test = UserBoxObj(userId=request.user,name='axx',box={"name":"allaa"})
         #test.save()
         qbcore.deleteUser(request)
         print("处理",util.getUserKey(request),"的后事")
@@ -164,8 +166,31 @@ def getWebSocket(request,bid):
                 ws.websocket=request.websocket
 '''
 
-#def SaveBoxObj(request):
+
 '''
 将json文件存入数据库，需要有两个参数，一个是uerId,这应该是一个user实例，用request.user应该就可以得到
 然后就是box，这个是用来存json文件的
 '''
+
+def SaveorGetBoxObj(request):
+    #print("进了SoG")
+    if request.method == "POST":
+        #print("进了POST")
+        userId = util.getUserKey(request)
+        name = request.POST.get("name",None) 
+        #print("nnnnname",name)
+        box = request.POST.get("data",None)
+        #print("bbbbox",box)
+        savetime = timezone.now()
+        userboxobj = UserBoxObj(userId = userId, name = name, box = box, savetime = savetime)
+        userboxobj.save()
+        #boxx = UserBoxObj.objects.values("box").filter(name=name).last()
+        #print("ggggetbox",boxx)
+        #print("len(boxxxx)",len(boxx))
+    if request.method == "GET":
+        name = request.GET.get("name",None)
+        if name:
+            box = UserBoxObj.objects.values("box").filter(name=name).last()
+            return JsonResponse(box)
+        return JsonResponse({})
+    return JsonResponse({})
