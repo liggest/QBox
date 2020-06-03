@@ -14,6 +14,7 @@ if __name__ == "__main__":
         "读取":".load {}",
         "警告":".alert {}",
         "新建":".newbox {} {} --data {}",
+        "移除":".delbox {}",
         "连接":".connect {}",
         "断开":".disconnect {}",
         "发送":".send {}",

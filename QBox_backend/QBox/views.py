@@ -146,8 +146,16 @@ class CommandView(View):
     def post(self,request):
         cmds=request.POST.get("commands","")
         recmds={"commands":""}
-        if commandParser.CommandParser.isCommand(cmds):
-            recmds["commands"]= async_to_sync(response.processCommands) (cmds)
+        total=[]
+        cmds=cmds.split("\n")
+        for cmd in cmds:
+            tcmd=response.text2Commands(cmd)
+            if tcmd!="":
+                total.append(tcmd)
+            else:
+                total.append(cmd)
+        #if commandParser.CommandParser.isCommand(cmds):
+        recmds["commands"]= async_to_sync(response.processCommands) (total)
         return JsonResponse(recmds)
 
 '''

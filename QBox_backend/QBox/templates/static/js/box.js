@@ -72,6 +72,9 @@ function Box(name,content,boxobj) {
             case "chatbox":
                 this.chatBoxInit();
                 break;
+            case "orderbox":
+                this.orderBoxInit();
+                break;
         }
     }
     this.chatBoxInit=function () {
@@ -223,9 +226,6 @@ function Box(name,content,boxobj) {
                 mobj=messager.Node2mobj(et,1);
             }
             event.dataTransfer.setData("text",messager.mobj2JSON(mobj));
-        }
-        this.onfileDrag=function (event) {
-            event.preventDefault();
         }
         this.onfileDrop=function (event) {
             event.preventDefault();
@@ -498,9 +498,6 @@ function Box(name,content,boxobj) {
         this.basicCommand=function (cmder) {
             var handled=true;
             switch(cmder.command["command"]){
-                case "aaa":
-                    cmder.parse();
-                    break;
                 case "refresh":
                     this.refresh();
                     break;
@@ -555,7 +552,108 @@ function Box(name,content,boxobj) {
         
         this.msgsinit();
     }
-
+    this.orderBoxInit=function () {
+        this.innercontent=this.midcontent.lastElementChild;
+        this.order=this.innercontent.getElementsByClassName("orderDiv")[0];
+        this.orderbtn=this.innercontent.lastElementChild;
+        this.getCommands=function () {
+            var texts = this.order.innerText.split("\n");
+            var cmds=[];
+            var tl=texts.length;
+            for(var i=0;i<tl;i++){
+                if(!texts[i].startsWith(">>>")){
+                    cmds.push(texts[i]);
+                }
+            }
+            cmds=cmds.join("\n");
+            return cmds;
+        }
+        //this.preIn=function (data) {}
+        this.input=function (mobj) {
+            if(mobj["type"]==-1){
+                this.order.innerHTML+=mobj["content"][0]["value"];
+                return undefined;
+            }else if(mobj["type"]==0){
+                this.order.innerHTML+=">>>"+mobj["content"][0]["value"]+"\n";
+                return mobj;
+            }else if(mobj["type"]==1){
+                if(!this.order.innerText.endsWith("\n")){
+                    this.order.innerText+="\n";
+                }
+                this.analyze(mobj["content"][0]["value"]);
+            }
+        }
+        //this.preOut=function (mobj) {}
+        this.runCommands=function () {
+            var cmds=box.getCommands();
+            if(!box.order.innerText.endsWith("\n")){
+                box.order.innerText+="\n";
+            }
+            box.analyze(cmds);
+        }
+        this.orderbtn.addEventListener("click",this.runCommands);
+        this.refresh=function () {
+            this.order.innerHTML="";
+            this.nextBoxes.splice(0,this.nextBoxes.length);
+        }
+        var oldbasicCommand=this.basicCommand;
+        this.basicCommand=function (cmder) {
+            var handled=true;
+            switch(cmder.command["command"]){
+                case "run":
+                    this.runCommands();
+                    break;
+                case "refresh":
+                    this.refresh();
+                    break;
+                case "send":
+                    cmder.opt(["-box","-b"],0).opt("-user",0).opt(["-qq","-group"],0).parse();
+                    if(cmder.command["box"] || cmder.command["b"] || cmder.command["user"] || cmder.command["qq"] || cmder.command["group"]){
+                        handled=false;
+                    }else{
+                        var text=cmder.getParams();
+                        this.tryInput( messager.textobj(text,0) );
+                    }
+                    break;
+                default:
+                    handled=false;
+                    break;
+            }
+            if(!handled){
+                handled=oldbasicCommand.call(this,cmder);
+            }
+            return handled;
+        }
+        this.onfileDrop=function () {
+            event.preventDefault();
+            var ed=event.dataTransfer;
+            var ejson=ed.getData("text");
+            if(ejson!=""){
+                var mobj=messager.JSON2mobj(ejson);
+                box.tryInput(mobj);
+            }
+            var efs=ed.files;
+            if(efs!=undefined && efs.length!=0){
+                var mobj={"type":1,"content":[]};
+                for(var i=0;i<efs.length;i++){
+                    var file=efs[i];
+                    var ft=file["type"];
+                    if(ft.startsWith("text")){
+                        var reader = new FileReader();
+                        reader.readAsText(file,"gb2312");
+                        reader.onload=function () {
+                            var result=reader.result.replace(/[\n]/g,"\n<br>");
+                            console.log(result);
+                            mobj=messager.textobj(result,-1);
+                            box.tryInput(mobj);
+                        }
+                    }
+                }
+            }
+        }
+        this.innercontent.addEventListener("dragover",this.onfileDrag);
+        this.innercontent.addEventListener("drop",this.onfileDrop);
+    }
     this.nextBoxes=[];
 
     this.backendinit=function(){
@@ -771,6 +869,7 @@ function Box(name,content,boxobj) {
     }
     //#endregion
     this.getInnerBox(boxobj); //类创建的最后，按boxobj开始加载
+    this.title=this.midcontent.firstElementChild; // 重设title
 }
 
 //#region Box command
@@ -845,7 +944,7 @@ Box.prototype.basicCommand=function (cmder) {
             if(!boxtype){
                 boxtype="chatbox";
             }
-            console.log(boxtype);
+            //console.log(boxtype);
             if(typeof data=="string"){
                 data=JSON.parse(data);
             }else if(data instanceof Array){
@@ -859,6 +958,18 @@ Box.prototype.basicCommand=function (cmder) {
                 data["boxName"]=name;
             }
             this.newBox(boxtype,data);
+            break;
+        case "delbox":
+            cmder.opt("-name",1).opt("-id",1).parse();
+            var params=cmder.getParams();
+            var name=cmder.command["name"]||params;
+            var id=Number(cmder.command["id"])||undefined;
+            this.delBox(name,id);
+            break;
+        case "rename":
+            cmder.parse();
+            var params=cmder.getParams();
+            this.setName(params);
             break;
         default:
             handled=false;
@@ -951,15 +1062,33 @@ Box.prototype.boxObjUpdate=function(data){
 //#endregion
 //#region Box input output
 Box.prototype.preIn=function(data){
-    return data;
+    if(messager.ismobj(data)){
+        if(data["content"][0]["type"]=="t"){
+            if(data["content"].length==1 && data["content"][0]["value"]===""){
+                return undefined;
+            }
+            return data;
+        }
+    }
+    return undefined;
+    //return data;
 }
-Box.prototype.input=function(data){
+Box.prototype.input=function(mobj){
     console.log( this.boxName+"收到了:");
-    console.log(data);
-    return data;
+    console.log(mobj);
+    if(mobj["type"]==1){
+        this.analyze(mobj["content"][0]["value"]);
+    }
+    return mobj;
 }
-Box.prototype.preOut=function (data) {
-    return data;
+Box.prototype.preOut=function (mobj) {
+    var remobj=undefined;
+        if(mobj["type"]==0){
+            remobj={...mobj};
+            remobj["type"]=1;
+        }
+        return remobj;
+    //return data;
 }
 Box.prototype.output=function(data,nexts){
     if(!(nexts instanceof Array) ){
@@ -976,7 +1105,7 @@ Box.prototype.tryInput=function (data,noOut) {
     var redata=undefined;
     if(data){
         redata=this.input(data);
-        if(!noOut){
+        if(!noOut && redata){
             redata=this.preOut(redata);
             if(redata){
                 this.output(redata);
@@ -1012,6 +1141,12 @@ Box.prototype.disconnect=function (name,id) {
         return false;
     }
 }
+Box.prototype.analyze=function (text) {
+    nodeals=this.processCommands(text);
+    if(nodeals.length>0){
+        this.commandsToBackend(nodeals);
+    }
+}
 //#endregion
 
 //#region Box static
@@ -1028,6 +1163,27 @@ Box.prototype.newBox=function(boxtype,data){
         }
     );
     return xhr;
+}
+Box.prototype.delBox=function (name,id) {
+    var nb=undefined;
+    if(id){
+        nb=boxLists.findBoxByNum(id);
+    }else{
+        nb=boxLists.findBoxByName(name);
+    }
+    if(nb){
+        if(this.nextBoxes){
+            var idx=this.nextBoxes.findBoxIdxByNum(nb.boxNum);
+            this.nextBoxes.removeAt(idx);
+        }
+        nb.selfDestroy();
+        return true;
+    }else{
+        return false;
+    }    
+}
+Box.prototype.onfileDrag=function (event) {
+    event.preventDefault();
 }
 //#endregion
 
@@ -1446,6 +1602,18 @@ function systemCommand (cmder) {
             }
             break;
         case "wait":
+            cmder.opt(["-t","-time"],1).parse()
+            var time=cmder.command["t"]||cmder.command["time"];
+            if(time){
+                time=Number(time);
+                var text=cmder.getParams();
+                if(this && this.analyze){
+                    var box=this;
+                    setTimeout(function () {
+                        box.analyze(text);
+                    },Number(time));
+                }
+            }
             break;
         default:
             handled=false;

@@ -10,7 +10,8 @@ import requests
 from QBox.views import qbcore
 
 async def processCommands(cmds,nodeals=False):
-    cmds=cmds.split("\n")
+    if isinstance(cmds,str):
+        cmds=cmds.split("\n")
     recmds=[]
     nodeals=[]
     for cmd in cmds:
@@ -82,6 +83,18 @@ def fillParams(cmds:str,params):
         params+=[""]*delta
     return (cmds.format(*params)).strip()
 
+def text2Commands(text):
+    recmds=""
+    if not text:
+        return recmds
+    tlist=text.split()
+    conn=get_redis_connection()
+    cmds=conn.hget("cmdmaps",tlist[0])
+    if cmds:
+        cmds=cmds.decode()
+        recmds=fillParams(cmds,tlist[1:])
+    return recmds
+
 def processMessages(mobj):
     remsgs=[]
     recmds=""
@@ -89,12 +102,7 @@ def processMessages(mobj):
         text=messager.getTextFromMobj(mobj)
         if text=="":
             return remsgs,recmds
-        tlist=text.split()
-        conn=get_redis_connection()
-        cmds=conn.hget("cmdmaps",tlist[0])
-        if cmds:
-            cmds=cmds.decode()
-            recmds=fillParams(cmds,tlist[1:])
+        recmds=text2Commands(text)
     return remsgs,recmds
 
 def sendQQ(text,qq,mtype):
