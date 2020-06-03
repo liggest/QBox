@@ -11,7 +11,9 @@ from django.conf import settings
 btdict={
     "chatbox":"chatbox.html",
     "webpagebox":"webpagebox.html",
-    "imgbox":"imagebox.html"
+    "imgbox":"imagebox.html",
+    "videobox":"videobox.html",
+    "audiobox":"audiobox.html",
     #"webbox":"chatbox.html",
 }
 
