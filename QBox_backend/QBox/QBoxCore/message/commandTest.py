@@ -18,7 +18,8 @@ if __name__ == "__main__":
         "连接":".connect {}",
         "断开":".disconnect {}",
         "发送":".send {}",
-        "发"  :".send {}"
+        "发"  :".send {}",
+        "你叫什么":".version"
     }
 
     with open(pklpath,"wb") as f:

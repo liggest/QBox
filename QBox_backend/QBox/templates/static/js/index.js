@@ -245,6 +245,10 @@ function load(name,clear) {
         },
         success: function (data) {
             console.log("加载完成!");
+            if(data["success"]===false){
+                boxinit();
+                return;
+            }
             if(data["box"]){
                 var boxobjs=JSON.parse(data["box"]);
                 var loadloop=setInterval(function () {

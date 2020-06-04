@@ -1,6 +1,7 @@
 from .commandParser import CommandParser
 #from .commandTest import pklpath
 from . import messager
+from .module.google_translatation import gTranslator
 from django.core.cache import cache
 from django_redis import get_redis_connection
 import pickle
@@ -52,8 +53,25 @@ async def basicCommand(cp:CommandParser):
                 sendQQ(text,qq,"user")
             if group:
                 sendQQ(text,group,"group")
-    elif cmd in ["a","b","c"]:
-        pass
+    elif cmd=="version":
+        recmds.append(".send -alpha2.0-")
+    elif cmd in ["translate","ts"]:
+        cp.opt("-from",1).opt("-to",1).opt("-p",0).opt("-d",0).opt("-donly",0).parse()
+        text=cp.getParams()
+        if(text.strip()==""):
+            recmds.append(".send 给点东西让我翻译嘛")
+        a=gTranslator()
+        donly=cp.command.get("donly",None)
+        if donly:
+            result=" ".join( a.detectonly(text) )
+            recmds.append(".send %s"%result )
+        else:
+            fromlan=cp.command.get("from","auto")
+            tolan=cp.command.get("to","en")
+            poun=cp.command.get("p",None)
+            dtct=cp.getByType("d",None)
+            result="<br>".join(a.trans(text,fromlan=fromlan,tolan=tolan,poun=poun,detect=dtct or donly))
+            recmds.append(".send %s"%result )
     else:
         handled=False
     return recmds,handled

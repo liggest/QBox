@@ -135,7 +135,9 @@ function Box(name,content,boxobj) {
             if(messager.ismobj(data)){
                 var istext=data["content"][0]["type"]=="t";
                 if(istext){
-                    data["content"][0]["value"]=messager.addPS(data["content"][0]["value"],this.prefix,this.suffix);
+                    if(data["type"]==1){
+                        data["content"][0]["value"]=messager.addPS(data["content"][0]["value"],this.prefix,this.suffix);
+                    }
                     if(data["content"].length==1 && data["content"][0]["value"]===""){
                         return undefined;
                     }
@@ -510,6 +512,17 @@ function Box(name,content,boxobj) {
                         this.tryInput( messager.textobj(text,0) );
                     }
                     break;
+                case "prefix":
+                    cmder.parse();
+                    var params=cmder.getParams();
+                    this.tryInput( messager.textobj("已设置前缀为 "+params,0) );
+                    this.prefix=params;
+                    break;
+                case "suffix":
+                    cmder.parse();
+                    var params=cmder.getParams();
+                    this.tryInput( messager.textobj("已设置后缀为 "+params,0) );
+                    this.suffix=params;
                 default:
                     handled=false;
                     break;
@@ -574,11 +587,11 @@ function Box(name,content,boxobj) {
                 this.order.innerHTML+=mobj["content"][0]["value"];
                 return undefined;
             }else if(mobj["type"]==0){
-                this.order.innerHTML+=">>>"+mobj["content"][0]["value"]+"\n";
+                this.order.innerHTML+=">>>"+mobj["content"][0]["value"]+"<br>";
                 return mobj;
             }else if(mobj["type"]==1){
-                if(!this.order.innerText.endsWith("\n")){
-                    this.order.innerText+="\n";
+                if(!this.order.innerText.endsWith("<br>") || !this.order.innerText.endsWith("\n")){
+                    this.order.innerText+="<br>";
                 }
                 this.analyze(mobj["content"][0]["value"]);
             }
@@ -964,7 +977,12 @@ Box.prototype.basicCommand=function (cmder) {
             var params=cmder.getParams();
             var name=cmder.command["name"]||params;
             var id=Number(cmder.command["id"])||undefined;
-            this.delBox(name,id);
+            if(name || id){
+                this.delBox(name,id);
+            }else{
+                this.delBox(this.boxName,this.boxNum);
+            }
+                
             break;
         case "rename":
             cmder.parse();
@@ -1337,7 +1355,7 @@ Messager.prototype.addPS=function (text,p,s) {
     if(text.startsWith("|")){
         result+=text.substring(1);
     }else{
-        result+=p+text;
+        result+=p+" "+text;
     }
     if(!text.endsWith("|")){
         result+=s;

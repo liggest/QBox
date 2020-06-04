@@ -210,12 +210,14 @@ def SaveorGetBoxObj(request):
         #print("len(boxxxx)",len(boxx))
     if request.method == "GET":
         name = request.GET.get("name",None)
-        if name:
-            boxtext = UserBoxObj.objects.values("box").filter(name=name).last()
-            #boxes=json.loads( boxtext["box"] )
-            #print(boxes)
-            return JsonResponse(boxtext)
-        return JsonResponse({})
+        if request.user.is_authenticated:
+            userId = request.user.username
+            if name and userId:
+                boxtext = UserBoxObj.objects.values("box").filter(name=name,userId = userId).last()
+                #boxes=json.loads( boxtext["box"] )
+                #print(boxes)
+                return JsonResponse(boxtext)
+        return JsonResponse({"success":False})
     return JsonResponse({})
 
 
