@@ -193,6 +193,7 @@ function Box(name,content,boxobj) {
             //    return;
             //}
             var input=box.text.firstElementChild.value;
+            if(input===""){return;}
             var mobj=messager.textobj(input,1);
             box.tryInput(mobj);
 
@@ -516,7 +517,7 @@ function Box(name,content,boxobj) {
                     cmder.parse();
                     var params=cmder.getParams();
                     this.tryInput( messager.textobj("已设置前缀为 "+params,0) );
-                    this.prefix=params;
+                    this.prefix=params+" ";
                     break;
                 case "suffix":
                     cmder.parse();
@@ -591,8 +592,8 @@ function Box(name,content,boxobj) {
                 this.order.innerHTML+=">>>"+mobj["content"][0]["value"]+"<br>";
                 return mobj;
             }else if(mobj["type"]==1){
-                if(!this.order.innerText.endsWith("<br>") || !this.order.innerText.endsWith("\n")){
-                    this.order.innerText+="<br>";
+                if(!this.order.innerHTML.endsWith("<br>") || !this.order.innerHTML.endsWith("\n")){
+                    this.order.innerHTML+="<br>";
                 }
                 this.analyze(mobj["content"][0]["value"]);
             }
@@ -600,8 +601,8 @@ function Box(name,content,boxobj) {
         //this.preOut=function (mobj) {}
         this.runCommands=function () {
             var cmds=box.getCommands();
-            if(!box.order.innerText.endsWith("\n")){
-                box.order.innerText+="\n";
+            if(!box.order.innerHTML.endsWith("<br>") || !box.order.innerHTML.endsWith("\n")){
+                box.order.innerHTML+="<br>";
             }
             box.analyze(cmds);
         }
@@ -1175,7 +1176,7 @@ Box.prototype.analyze=function (text) {
 
 //#region Box static
 Box.prototype.newBox=function(boxtype,data){
-    var xhr = $.get("/box/templates",{boxtype:boxtype, data:JSON.stringify(data||{}),width:document.body.clientWidth,height:document.body.clientHeight}).done(
+    var xhr = $.get("/box/templates/",{boxtype:boxtype, data:JSON.stringify(data||{}),width:document.body.clientWidth,height:document.body.clientHeight}).done(
         function(bdata) {
             if(bdata.hasOwnProperty("boxtype")){
                 var boxobj=bdata;
@@ -1361,7 +1362,7 @@ Messager.prototype.addPS=function (text,p,s) {
     if(text.startsWith("|")){
         result+=text.substring(1);
     }else{
-        result+=p+" "+text;
+        result+=p+text;
     }
     if(!text.endsWith("|")){
         result+=s;

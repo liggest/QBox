@@ -256,6 +256,7 @@ function load(name,clear) {
                         new Box(undefined,boxTemplate.cloneNode(true),boxobjs[0]).init(container,boxLists,dragger);
                         boxobjs.splice(0,1);
                     }else{
+                        currentFocus=boxLists[0];
                         clearInterval(loadloop);
                     }
                 },1200);

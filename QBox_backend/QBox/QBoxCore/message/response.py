@@ -54,7 +54,7 @@ async def basicCommand(cp:CommandParser):
             if group:
                 sendQQ(text,group,"group")
     elif cmd=="version":
-        recmds.append(".send -alpha2.0-")
+        recmds.append(".send ~alpha2.0~")
     elif cmd in ["translate","ts"]:
         cp.opt("-from",1).opt("-to",1).opt("-p",0).opt("-d",0).opt("-donly",0).parse()
         text=cp.getParams()
