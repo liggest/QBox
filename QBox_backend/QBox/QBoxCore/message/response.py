@@ -144,4 +144,4 @@ def loadAndCache():
         #print(conn.hget("cmdmaps","登录"))
     print("cmdmaps加载完毕~")
 
-loadAndCache()
+#loadAndCache()

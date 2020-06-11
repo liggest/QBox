@@ -20,6 +20,7 @@ from .models import UserBoxObj
 qbcore=core.core()
 
 from .QBoxCore.message import response
+response.loadAndCache()
 
 
 # Create your views here.
@@ -140,7 +141,7 @@ def test(request):
 
 class CommandView(View):
 
-    def get(self,request):
+    def get(self,request): #留作指令提示用
         return JsonResponse({})
 
     def post(self,request):
@@ -155,7 +156,7 @@ class CommandView(View):
             else:
                 total.append(cmd)
         #if commandParser.CommandParser.isCommand(cmds):
-        recmds["commands"]= async_to_sync(response.processCommands) (total)
+        recmds["commands"]= async_to_sync(response.processCommands) (total,nodeals=True)
         return JsonResponse(recmds)
 
 '''

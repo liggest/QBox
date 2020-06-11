@@ -490,7 +490,7 @@ function Box(name,content,boxobj) {
         this.backendinit=function () {
             var xhr=oldBackendinit();
             xhr.done(function(data) {
-                //console.log("hack了框！");
+                console.log("引入WebSocket");
                 box.wsConnect();
             });
         }
@@ -523,6 +523,7 @@ function Box(name,content,boxobj) {
                     var params=cmder.getParams();
                     this.tryInput( messager.textobj("已设置后缀为 "+params,0) );
                     this.suffix=params;
+                    break;
                 default:
                     handled=false;
                     break;
@@ -823,8 +824,7 @@ function Box(name,content,boxobj) {
             box.settingMode=true;
         }
     }
-    this.backtitle.addEventListener("dblclick",this.dbClick);
-    this.midcontent.addEventListener("dblclick",this.dbClick);
+
     //#endregion
     //#region longpress-resizeMode
     this.pressed=false;
@@ -849,19 +849,13 @@ function Box(name,content,boxobj) {
             this.resizeBegin();
         }
     }
-    this.backtitle.addEventListener("mousedown",this.onPressBegin);
-    this.backtitle.addEventListener("mouseup",this.onDePress);
-    this.backtitle.addEventListener("mouseout",this.onDePress);
-    this.content.addEventListener("mousedown",this.onPressBegin);
-    this.content.addEventListener("mouseup",this.onDePress);
-    this.content.addEventListener("mouseout",this.onDePress);
 
     this.frontClose=function () {
         if(box.resizeMode){
             box.resizeEnd();
         }
     }
-    this.frontcontent.firstElementChild.addEventListener("click",this.frontClose);
+
     //#endregion
     //#endregion
 
@@ -883,6 +877,18 @@ function Box(name,content,boxobj) {
     //#endregion
     this.getInnerBox(boxobj); //类创建的最后，按boxobj开始加载
     this.title=this.midcontent.firstElementChild; // 重设title
+
+    this.backtitle.addEventListener("dblclick",this.dbClick);
+    this.title.addEventListener("dblclick",this.dbClick);
+
+    this.backtitle.addEventListener("mousedown",this.onPressBegin);
+    this.backtitle.addEventListener("mouseup",this.onDePress);
+    this.backtitle.addEventListener("mouseout",this.onDePress);
+    this.title.addEventListener("mousedown",this.onPressBegin);
+    this.title.addEventListener("mouseup",this.onDePress);
+    this.title.addEventListener("mouseout",this.onDePress);
+
+    this.frontcontent.firstElementChild.addEventListener("click",this.frontClose);
 }
 
 //#region Box command
