@@ -201,7 +201,7 @@ function Box(name,content,boxobj) {
             //box.sendMsg(mobj);
             //box.analyze(input);
         }
-        this.text.lastElementChild.firstElementChild.addEventListener("click",this.clickSubmit);
+        
         /*
         this.importSubmit=function (mobj) {
             if(this.settingMode || this.resizeMode){
@@ -252,8 +252,6 @@ function Box(name,content,boxobj) {
                 //box.sendMsg(mobj);
             }
         }
-        this.innercontent.addEventListener("dragover",this.onfileDrag);
-        this.innercontent.addEventListener("drop",this.onfileDrop);
         this.prefix="";
         this.suffix="";
         this.analyze=function (text) {
@@ -566,6 +564,11 @@ function Box(name,content,boxobj) {
         //#endregion
         
         this.msgsinit();
+
+        this.text.lastElementChild.firstElementChild.addEventListener("click",this.clickSubmit);
+        this.innercontent.addEventListener("dragover",this.onfileDrag);
+        this.innercontent.addEventListener("drop",this.onfileDrop);
+        this.text.addEventListener("mousedown",this.onFocus);
     }
     this.orderBoxInit=function () {
         this.innercontent=this.midcontent.lastElementChild;
@@ -592,9 +595,10 @@ function Box(name,content,boxobj) {
                 this.order.innerHTML+=">>>"+mobj["content"][0]["value"]+"<br>";
                 return mobj;
             }else if(mobj["type"]==1){
+                /*
                 if(!this.order.innerHTML.endsWith("<br>") || !this.order.innerHTML.endsWith("\n")){
                     this.order.innerHTML+="<br>";
-                }
+                }*/
                 this.analyze(mobj["content"][0]["value"]);
             }
         }
@@ -830,6 +834,9 @@ function Box(name,content,boxobj) {
     //#region longpress-resizeMode
     this.pressed=false;
     this.longPressFunc=NaN;
+    this.onFocus=function () {
+        currentFocus=box;
+    }
     this.onPressBegin=function () {
         box.pressed=true;
         box.longPressFunc=setTimeout(function () {
@@ -837,7 +844,7 @@ function Box(name,content,boxobj) {
                 box.longPress();
             }
         },longPressInterval);
-        currentFocus=box;
+        box.onFocus();
     }
     this.onDePress=function () {
         if(box.pressed){
